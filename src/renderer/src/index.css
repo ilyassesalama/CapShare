@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@import '@fontsource-variable/inter';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -14,44 +16,44 @@
 :root {
   --radius: 0.875rem;
 
-  --background: oklch(0.985 0.002 247.839);
-  --foreground: oklch(0.21 0.006 285.885);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
 
   /* Translucent navigation-layer surfaces (glass) */
   --card: oklch(1 0 0 / 62%);
-  --card-foreground: oklch(0.21 0.006 285.885);
-  --popover: oklch(1 0 0 / 78%);
-  --popover-foreground: oklch(0.21 0.006 285.885);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0 / 80%);
+  --popover-foreground: oklch(0.145 0 0);
 
-  --primary: oklch(0.546 0.215 262.881);
-  --primary-foreground: oklch(0.985 0.002 247.839);
-  --secondary: oklch(0.92 0.004 286.32 / 70%);
-  --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.92 0.004 286.32 / 55%);
-  --muted-foreground: oklch(0.485 0.011 285.938);
-  --accent: oklch(0.92 0.004 286.32 / 65%);
-  --accent-foreground: oklch(0.21 0.006 285.885);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0.002 247.839);
 
-  --border: oklch(0.45 0.01 285 / 14%);
-  --input: oklch(0.45 0.01 285 / 18%);
-  --ring: oklch(0.546 0.215 262.881 / 55%);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
 
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
 
   --sidebar: transparent;
-  --sidebar-foreground: oklch(0.21 0.006 285.885);
-  --sidebar-primary: oklch(0.546 0.215 262.881);
-  --sidebar-primary-foreground: oklch(0.985 0.002 247.839);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(1 0 0 / 55%);
-  --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
-  --sidebar-border: oklch(0.45 0.01 285 / 10%);
-  --sidebar-ring: oklch(0.546 0.215 262.881 / 55%);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0 / 60%);
+  --sidebar-ring: oklch(0.708 0 0);
 
   /* Track-lane colors for the mini timeline */
   --track-video: oklch(0.62 0.19 255);
@@ -69,43 +71,48 @@
 }
 
 .dark {
-  --background: oklch(0.16 0.006 285.823);
-  --foreground: oklch(0.97 0.001 286.375);
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
 
-  --card: oklch(0.27 0.006 286.033 / 52%);
-  --card-foreground: oklch(0.97 0.001 286.375);
-  --popover: oklch(0.25 0.006 286.033 / 82%);
-  --popover-foreground: oklch(0.97 0.001 286.375);
+  --card: oklch(0.205 0 0 / 55%);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0 / 85%);
+  --popover-foreground: oklch(0.985 0 0);
 
-  --primary: oklch(0.623 0.188 259.815);
-  --primary-foreground: oklch(0.985 0.002 247.839);
-  --secondary: oklch(0.32 0.006 286.033 / 70%);
-  --secondary-foreground: oklch(0.97 0.001 286.375);
-  --muted: oklch(0.32 0.006 286.033 / 55%);
-  --muted-foreground: oklch(0.712 0.013 286.067);
-  --accent: oklch(0.34 0.006 286.033 / 65%);
-  --accent-foreground: oklch(0.97 0.001 286.375);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: oklch(0.985 0.002 247.839);
 
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 16%);
-  --ring: oklch(0.623 0.188 259.815 / 60%);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
 
   --sidebar: transparent;
-  --sidebar-foreground: oklch(0.97 0.001 286.375);
-  --sidebar-primary: oklch(0.623 0.188 259.815);
-  --sidebar-primary-foreground: oklch(0.985 0.002 247.839);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(1 0 0 / 10%);
-  --sidebar-accent-foreground: oklch(0.97 0.001 286.375);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.623 0.188 259.815 / 60%);
+  --sidebar-ring: oklch(0.556 0 0);
 
   --glass-bg: oklch(0.25 0.008 285 / 45%);
   --glass-bg-strong: oklch(0.25 0.008 285 / 68%);
   --glass-border: oklch(1 0 0 / 14%);
   --glass-highlight: oklch(1 0 0 / 22%);
   --glass-shadow: oklch(0 0 0 / 35%);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
 }
 
 @theme inline {
@@ -153,9 +160,17 @@
   --color-track-sticker: var(--track-sticker);
   --color-track-effect: var(--track-effect);
 
+  /* SF Pro on macOS for the native Tahoe feel; bundled Inter Variable on
+     Windows/Linux so both platforms render identically-metric type. */
   --font-sans:
-    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI Variable',
-    'Segoe UI', Inter, system-ui, sans-serif;
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Inter Variable',
+    'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+
+  --font-heading: var(--font-sans);
+
+  --radius-3xl: calc(var(--radius) * 2.2);
+
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 @layer base {
@@ -170,11 +185,18 @@
   }
 
   body {
-    /* Transparent so native vibrancy (mac) / mica (win11) shows through;
-       the <Wallpaper/> component paints the refractable backdrop. */
+    /* Transparent (NOT bg-background) so native vibrancy (mac) / mica (win11)
+       shows through; the <Wallpaper/> component paints the refractable backdrop. */
     background: transparent;
-    @apply text-foreground font-sans antialiased;
+    @apply font-sans antialiased text-foreground;
     user-select: none;
+  }
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+  html {
+    @apply font-sans;
   }
 }
 

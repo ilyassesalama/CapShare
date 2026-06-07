@@ -48,15 +48,18 @@ export function MiniTimeline({ tracks, durationUs }: MiniTimelineProps): JSX.Ele
               const width = Math.max((segment.durationUs / durationUs) * 100, 0.75)
               return (
                 <Tooltip key={segmentIndex}>
-                  <TooltipTrigger asChild>
-                    <div
-                      className={cn(
-                        'absolute top-0.5 bottom-0.5 rounded-[5px] opacity-90 transition-opacity hover:opacity-100',
-                        TRACK_COLORS[track.type]
-                      )}
-                      style={{ left: `${left}%`, width: `${width}%` }}
-                    />
-                  </TooltipTrigger>
+                  {/* Base UI replaces Radix's asChild with a render prop. */}
+                  <TooltipTrigger
+                    render={
+                      <div
+                        className={cn(
+                          'absolute top-0.5 bottom-0.5 rounded-[5px] opacity-90 transition-opacity hover:opacity-100',
+                          TRACK_COLORS[track.type]
+                        )}
+                        style={{ left: `${left}%`, width: `${width}%` }}
+                      />
+                    }
+                  />
                   <TooltipContent side="top" className="max-w-60">
                     <div className="truncate text-xs">
                       {segment.label ?? TRACK_LABELS[track.type]}

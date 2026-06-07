@@ -99,7 +99,7 @@ function App(): JSX.Element {
   }, [updateSettings])
 
   return (
-    <TooltipProvider delayDuration={250}>
+    <TooltipProvider delay={250}>
       <Wallpaper />
       <div className="flex h-full">
         <Sidebar view={view} onNavigate={setView} />
