@@ -71,7 +71,7 @@ export function Sidebar({ view, onNavigate }: SidebarProps): JSX.Element {
       )}
     >
       <div className="mb-4 flex items-center gap-2.5 px-2">
-        <div className="flex size-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#4F7DF9] via-[#6A5CF6] to-[#9D4DF0] text-sm font-bold text-white shadow-md">
+        <div className="flex size-8 items-center justify-center rounded-xl bg-linear-to-br from-[#4F7DF9] via-[#6A5CF6] to-[#9D4DF0] text-sm font-bold text-white shadow-md">
           C
         </div>
         <div className="text-[15px] font-semibold tracking-tight">CapShare</div>

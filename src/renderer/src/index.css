@@ -178,6 +178,22 @@
     @apply border-border outline-ring/50;
   }
 
+  /* iOS-style continuous (squircle) corners everywhere a border-radius exists.
+     `corner-shape` is a no-op when border-radius is 0, so this only affects
+     already-rounded elements. Fully-round elements (avatars, icon buttons,
+     pills) stay true circles/stadiums — a squircle would distort them, and
+     that matches iOS. Gracefully ignored on engines without `corner-shape`. */
+  *,
+  *::before,
+  *::after {
+    corner-shape: squircle;
+  }
+  .rounded-full,
+  .rounded-full::before,
+  .rounded-full::after {
+    corner-shape: round;
+  }
+
   html,
   body,
   #root {
@@ -226,7 +242,7 @@
     background: color-mix(in oklab, var(--glass-bg) 60%, transparent);
     -webkit-backdrop-filter: blur(12px) saturate(160%);
     backdrop-filter: blur(12px) saturate(160%);
-    border: 1px solid color-mix(in oklab, var(--glass-border) 60%, transparent);
+    border: 1px solid var(--border);
   }
 
   /* Window drag regions for the frameless window */

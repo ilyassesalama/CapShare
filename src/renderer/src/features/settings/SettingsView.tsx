@@ -1,4 +1,4 @@
-import type { JSX } from 'react'
+import type { JSX, ReactNode } from 'react'
 import { FolderOpen, RotateCcw } from 'lucide-react'
 import { toast } from 'sonner'
 import type { AppSettings } from '@shared/types'
@@ -47,8 +47,8 @@ export function SettingsView({ settings, onChange }: SettingsViewProps): JSX.Ele
         <p className="text-[12px] text-muted-foreground">How CapShare finds and moves projects</p>
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-6 pb-6">
-        <section className="glass-subtle flex flex-col gap-4 rounded-2xl p-4">
+      <div className="flex min-h-0 flex-1 flex-col gap-7 overflow-y-auto px-6 pt-4 pb-8">
+        <SettingsGroup title="Locations">
           <SettingRow
             label="CapCut project folder"
             help={settings.draftRootOverride ?? 'Detected automatically'}
@@ -67,7 +67,7 @@ export function SettingsView({ settings, onChange }: SettingsViewProps): JSX.Ele
               )}
               <Button
                 variant="secondary"
-                className="rounded-full"
+                className="rounded-full border border-input"
                 onClick={() =>
                   void pickFolder('Choose the com.lveditor.draft folder', 'draftRootOverride')
                 }
@@ -95,16 +95,16 @@ export function SettingsView({ settings, onChange }: SettingsViewProps): JSX.Ele
               )}
               <Button
                 variant="secondary"
-                className="rounded-full"
+                className="rounded-full border border-input"
                 onClick={() => void pickFolder('Choose export folder', 'defaultExportDir')}
               >
                 <FolderOpen className="size-4" /> Choose…
               </Button>
             </div>
           </SettingRow>
-        </section>
+        </SettingsGroup>
 
-        <section className="glass-subtle flex flex-col gap-4 rounded-2xl p-4">
+        <SettingsGroup title="Sharing">
           <SettingRow
             label="Include AI caches by default"
             help="Larger .capshare files; skips re-analysis after import"
@@ -114,8 +114,10 @@ export function SettingsView({ settings, onChange }: SettingsViewProps): JSX.Ele
               onCheckedChange={(checked) => onChange({ includeCachesByDefault: checked })}
             />
           </SettingRow>
+        </SettingsGroup>
 
-          <SettingRow label="Appearance" help="Liquid glass follows your system by default">
+        <SettingsGroup title="Appearance">
+          <SettingRow label="Theme" help="Liquid glass follows your system by default">
             <Select
               items={THEME_OPTIONS}
               value={settings.theme}
@@ -133,9 +135,24 @@ export function SettingsView({ settings, onChange }: SettingsViewProps): JSX.Ele
               </SelectContent>
             </Select>
           </SettingRow>
-        </section>
+        </SettingsGroup>
       </div>
     </div>
+  )
+}
+
+function SettingsGroup({
+  title,
+  children
+}: {
+  title: string
+  children: ReactNode
+}): JSX.Element {
+  return (
+    <section className="flex flex-col gap-2">
+      <h2 className="px-1 text-[15px] font-semibold tracking-tight">{title}</h2>
+      <div className="glass-subtle divide-y divide-border/50 rounded-2xl px-4">{children}</div>
+    </section>
   )
 }
 
@@ -149,14 +166,14 @@ function SettingRow({
   children: JSX.Element
 }): JSX.Element {
   return (
-    <div className="flex items-center justify-between gap-6">
+    <div className="flex items-center justify-between gap-6 py-3.5">
       <div className="min-w-0">
         <Label className="text-[13px] font-medium">{label}</Label>
         <p className="mt-0.5 truncate text-[11.5px] text-muted-foreground" title={help}>
           {help}
         </p>
       </div>
-      <div className="shrink-0">{children}</div>
+      <div className="flex shrink-0 items-center">{children}</div>
     </div>
   )
 }

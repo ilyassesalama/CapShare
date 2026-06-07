@@ -95,11 +95,11 @@ function DetailDialog({ project, open, onClose }: ProjectDetailProps): JSX.Eleme
     >
       <DialogContent
         showCloseButton={false}
-        className="glass-strong max-w-2xl gap-0 overflow-hidden rounded-3xl border-none p-0"
+        className="glass-strong max-w-2xl gap-0 overflow-hidden rounded-3xl border-none bg-white! p-0 dark:bg-[var(--glass-bg-strong)]!"
       >
         {project && (
           <>
-            <div className="relative h-56 w-full overflow-hidden bg-foreground/[0.04]">
+            <div className="relative h-56 w-full overflow-hidden bg-foreground/4">
               {project.coverDataUrl ? (
                 <img src={project.coverDataUrl} alt="" className="size-full object-cover" />
               ) : (
@@ -107,7 +107,7 @@ function DetailDialog({ project, open, onClose }: ProjectDetailProps): JSX.Eleme
                   <Clapperboard className="size-14" strokeWidth={1.2} />
                 </div>
               )}
-              <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-black/60 to-transparent" />
               <DialogTitle className="absolute bottom-3 left-5 text-xl font-bold text-white drop-shadow">
                 {project.name}
               </DialogTitle>
@@ -213,25 +213,29 @@ function DetailDialog({ project, open, onClose }: ProjectDetailProps): JSX.Eleme
                     transition={{ type: 'spring', stiffness: 420, damping: 30 }}
                     className="flex flex-col gap-4"
                   >
-                    <div className="flex items-center gap-2.5">
-                      <Switch
-                        id="include-caches"
-                        checked={includeCaches}
-                        onCheckedChange={setIncludeCaches}
-                      />
-                      <div className="flex flex-col gap-0.5">
-                        <Label
-                          htmlFor="include-caches"
-                          className="cursor-pointer text-[12px] leading-tight font-medium"
-                        >
-                          Include AI caches
-                        </Label>
-                        <span className="text-[10.5px] text-muted-foreground">
-                          Bigger file; skips re-analysis on the other machine
-                        </span>
+                    <div className="glass-subtle rounded-2xl px-4">
+                      <div className="flex items-center justify-between gap-6 py-3.5">
+                        <div className="min-w-0">
+                          <Label
+                            htmlFor="include-caches"
+                            className="cursor-pointer text-[13px] font-medium"
+                          >
+                            Include AI caches
+                          </Label>
+                          <p className="mt-0.5 text-[11.5px] text-muted-foreground">
+                            Bigger file; skips re-analysis on the other machine
+                          </p>
+                        </div>
+                        <div className="flex shrink-0 items-center">
+                          <Switch
+                            id="include-caches"
+                            checked={includeCaches}
+                            onCheckedChange={setIncludeCaches}
+                          />
+                        </div>
                       </div>
                     </div>
-                    <Button onClick={() => void startExport()} className="mt-2 w-full rounded-full">
+                    <Button onClick={() => void startExport()} className="mt-2 w-full rounded-xl">
                       <FileDown className="size-4" /> Export .capshare
                     </Button>
                   </motion.div>

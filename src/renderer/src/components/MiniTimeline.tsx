@@ -43,7 +43,7 @@ export function MiniTimeline({ tracks, durationUs }: MiniTimelineProps): JSX.Ele
           <div className="w-12 shrink-0 text-right text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
             {TRACK_LABELS[track.type]}
           </div>
-          <div className="relative h-5 flex-1 overflow-hidden rounded-[4px] bg-foreground/6">
+          <div className="relative h-5 flex-1 overflow-hidden rounded-lg bg-foreground/6">
             {track.segments.map((segment, segmentIndex) => {
               const left = (segment.startUs / durationUs) * 100
               const width = Math.max((segment.durationUs / durationUs) * 100, 0.75)
@@ -62,7 +62,7 @@ export function MiniTimeline({ tracks, durationUs }: MiniTimelineProps): JSX.Ele
                           delay: trackIndex * 0.06 + segmentIndex * 0.025
                         }}
                         className={cn(
-                          'absolute top-0.5 bottom-0.5 origin-left rounded-[3px]',
+                          'absolute top-0.5 bottom-0.5 origin-left rounded-[6px]',
                           TRACK_COLORS[track.type]
                         )}
                         style={{

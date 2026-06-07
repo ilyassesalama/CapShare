@@ -164,7 +164,7 @@ export function ImportView({
                 'flex w-full flex-col items-center justify-center gap-4 rounded-3xl border-2 border-dashed',
                 dragging
                   ? 'border-primary bg-primary/5'
-                  : 'border-border hover:border-primary/40 hover:bg-foreground/[0.02]'
+                  : 'border-border hover:border-primary/40 hover:bg-foreground/2'
               )}
             >
               <motion.div
@@ -305,7 +305,7 @@ function PreviewCard({
       transition={{ type: 'spring', stiffness: 320, damping: 26 }}
       className="glass my-auto w-full max-w-xl overflow-hidden rounded-3xl"
     >
-      <div className="relative h-48 w-full overflow-hidden bg-foreground/[0.04]">
+      <div className="relative h-48 w-full overflow-hidden bg-foreground/4">
         {preview.coverDataUrl ? (
           <img src={preview.coverDataUrl} alt="" className="size-full object-cover" />
         ) : (
@@ -313,7 +313,7 @@ function PreviewCard({
             <Clapperboard className="size-12" strokeWidth={1.3} />
           </div>
         )}
-        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/60 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-linear-to-t from-black/60 to-transparent" />
         <div className="absolute bottom-3 left-5 text-lg font-bold text-white drop-shadow">
           {preview.draftName}
         </div>

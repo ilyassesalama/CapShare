@@ -14,8 +14,8 @@ export function Wallpaper(): JSX.Element {
   if (window.capshare.env.nativeMaterial) {
     return (
       <div aria-hidden className="fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-background/45 dark:bg-background/40" />
-        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-foreground/[0.04] to-transparent" />
+        <div className="absolute inset-0 bg-background/90 dark:bg-background/40" />
+        <div className="absolute inset-x-0 top-0 h-40 bg-linear-to-b from-foreground/4 to-transparent" />
       </div>
     )
   }
