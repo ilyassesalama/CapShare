@@ -14,6 +14,12 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { errorMessage, unwrap } from '@/lib/ipc'
 
+const THEME_OPTIONS: { value: AppSettings['theme']; label: string }[] = [
+  { value: 'system', label: 'System' },
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' }
+]
+
 interface SettingsViewProps {
   settings: AppSettings | null
   onChange: (update: Partial<AppSettings>) => void
@@ -111,6 +117,7 @@ export function SettingsView({ settings, onChange }: SettingsViewProps): JSX.Ele
 
           <SettingRow label="Appearance" help="Liquid glass follows your system by default">
             <Select
+              items={THEME_OPTIONS}
               value={settings.theme}
               onValueChange={(theme) => onChange({ theme: theme as AppSettings['theme'] })}
             >
@@ -118,9 +125,11 @@ export function SettingsView({ settings, onChange }: SettingsViewProps): JSX.Ele
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="system">System</SelectItem>
-                <SelectItem value="light">Light</SelectItem>
-                <SelectItem value="dark">Dark</SelectItem>
+                {THEME_OPTIONS.map(({ value, label }) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </SettingRow>
