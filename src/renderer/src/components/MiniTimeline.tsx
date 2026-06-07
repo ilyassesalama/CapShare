@@ -1,4 +1,5 @@
 import type { JSX } from 'react'
+import { motion } from 'motion/react'
 import type { TrackSummary, TrackType } from '@shared/types'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatDuration } from '@/lib/format'
@@ -42,7 +43,7 @@ export function MiniTimeline({ tracks, durationUs }: MiniTimelineProps): JSX.Ele
           <div className="w-12 shrink-0 text-right text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
             {TRACK_LABELS[track.type]}
           </div>
-          <div className="relative h-5 flex-1 overflow-hidden rounded-md bg-foreground/[0.06]">
+          <div className="relative h-5 flex-1 overflow-hidden rounded-[4px] bg-foreground/6">
             {track.segments.map((segment, segmentIndex) => {
               const left = (segment.startUs / durationUs) * 100
               const width = Math.max((segment.durationUs / durationUs) * 100, 0.75)
@@ -50,20 +51,32 @@ export function MiniTimeline({ tracks, durationUs }: MiniTimelineProps): JSX.Ele
                 <Tooltip key={segmentIndex}>
                   <TooltipTrigger
                     render={
-                      <div
+                      <motion.div
+                        initial={{ scaleX: 0, opacity: 0 }}
+                        animate={{ scaleX: 1, opacity: 0.9 }}
+                        whileHover={{ opacity: 1 }}
+                        transition={{
+                          type: 'spring',
+                          stiffness: 380,
+                          damping: 32,
+                          delay: trackIndex * 0.06 + segmentIndex * 0.025
+                        }}
                         className={cn(
-                          'absolute top-0.5 bottom-0.5 rounded-[5px] opacity-90 transition-opacity hover:opacity-100',
+                          'absolute top-0.5 bottom-0.5 origin-left rounded-[3px]',
                           TRACK_COLORS[track.type]
                         )}
-                        style={{ left: `${left}%`, width: `${width}%` }}
+                        style={{
+                          left: `calc(${left}% + 0.5px)`,
+                          width: `max(calc(${width}% - 1.5px), 3px)`
+                        }}
                       />
                     }
                   />
-                  <TooltipContent side="top" className="max-w-60">
-                    <div className="truncate text-xs">
+                  <TooltipContent side="top" className="max-w-60 flex-col items-start gap-0.5">
+                    <div className="text-xs wrap-break-word">
                       {segment.label ?? TRACK_LABELS[track.type]}
                     </div>
-                    <div className="text-[10px] text-muted-foreground">
+                    <div className="text-[10px] opacity-60">
                       {formatDuration(segment.startUs)} · {formatDuration(segment.durationUs)} long
                     </div>
                   </TooltipContent>

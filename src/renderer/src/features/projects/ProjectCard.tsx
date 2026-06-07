@@ -13,13 +13,11 @@ interface ProjectCardProps {
 export function ProjectCard({ project, index, onOpen }: ProjectCardProps): JSX.Element {
   return (
     <motion.button
-      initial={{ opacity: 0, y: 14, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 350, damping: 28, delay: index * 0.04 }}
-      whileHover={{ y: -3, scale: 1.015 }}
-      whileTap={{ scale: 0.985 }}
       onClick={() => onOpen(project)}
-      className="glass group flex flex-col overflow-hidden rounded-2xl text-left shadow-sm transition-shadow hover:shadow-lg"
+      className="glass group flex flex-col overflow-hidden rounded-2xl text-left shadow-sm outline-2 outline-transparent transition-[outline-color] hover:outline-primary/60"
     >
       <div className="relative aspect-video w-full overflow-hidden bg-foreground/[0.04]">
         {project.coverDataUrl ? (

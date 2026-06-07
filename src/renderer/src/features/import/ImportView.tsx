@@ -9,7 +9,7 @@ import {
   Loader2,
   Rocket
 } from 'lucide-react'
-import { motion } from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react'
 import { toast } from 'sonner'
 import type { CollisionResolution, ImportPreview, ImportResult } from '@shared/types'
 import {
@@ -75,9 +75,8 @@ export function ImportView({
   useEffect(() => {
     if (!externalFile) return
     onExternalFileConsumed()
-    // Deferred so the inspection state change is not synchronous in the effect.
-    // NO cleanup on purpose: consuming the file re-renders with externalFile
-    // null, and a cleanup would cancel the timer before it ever fires.
+    // No cleanup on purpose: consuming the file re-renders with externalFile
+    // null, and a cleanup would cancel this timer before it ever fires.
     window.setTimeout(() => void inspect(externalFile), 0)
   }, [externalFile, inspect, onExternalFileConsumed])
 
@@ -146,95 +145,111 @@ export function ImportView({
       </header>
 
       <div className="flex min-h-0 flex-1 items-stretch justify-center overflow-y-auto px-6 pb-6">
-        {phase.state === 'idle' && (
-          <button
-            onDragOver={(e) => {
-              e.preventDefault()
-              setDragging(true)
-            }}
-            onDragLeave={() => setDragging(false)}
-            onDrop={onDrop}
-            onClick={() => void browse()}
-            className={cn(
-              'flex w-full flex-col items-center justify-center gap-4 rounded-3xl border-2 border-dashed transition-all duration-200',
-              dragging
-                ? 'scale-[1.01] border-primary bg-primary/5'
-                : 'border-border hover:border-primary/40 hover:bg-foreground/[0.02]'
-            )}
-          >
-            <motion.div
-              animate={dragging ? { y: -6, scale: 1.08 } : { y: 0, scale: 1 }}
-              transition={{ type: 'spring', stiffness: 320, damping: 22 }}
-              className="glass flex size-20 items-center justify-center rounded-[28px]"
+        <AnimatePresence mode="wait" initial={false}>
+          {phase.state === 'idle' && (
+            <motion.button
+              key="idle"
+              initial={{ opacity: 0, scale: 0.99 }}
+              animate={{ opacity: 1, scale: dragging ? 1.01 : 1 }}
+              exit={{ opacity: 0, scale: 0.99 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+              onDragOver={(e) => {
+                e.preventDefault()
+                setDragging(true)
+              }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={onDrop}
+              onClick={() => void browse()}
+              className={cn(
+                'flex w-full flex-col items-center justify-center gap-4 rounded-3xl border-2 border-dashed',
+                dragging
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border hover:border-primary/40 hover:bg-foreground/[0.02]'
+              )}
             >
-              <FileUp className="size-9 text-primary" strokeWidth={1.7} />
-            </motion.div>
-            <div className="text-center">
-              <div className="text-[15px] font-semibold">
-                {dragging ? 'Drop to import' : 'Drop a .capshare file here'}
-              </div>
-              <div className="mt-1 text-[12px] text-muted-foreground">
-                or click to browse — double-clicking a .capshare file works too
-              </div>
-            </div>
-          </button>
-        )}
-
-        {phase.state === 'inspecting' && (
-          <div className="flex flex-col items-center justify-center gap-3">
-            <Loader2 className="size-7 animate-spin text-primary" />
-            <div className="text-[13px] text-muted-foreground">Reading project…</div>
-          </div>
-        )}
-
-        {(phase.state === 'preview' || phase.state === 'running') && (
-          <PreviewCard
-            preview={phase.state === 'preview' ? phase.preview : phase.preview}
-            running={phase.state === 'running'}
-            ratio={phase.state === 'running' ? phase.ratio : 0}
-            onImport={startImport}
-            onDiscard={() => setPhase({ state: 'idle' })}
-          />
-        )}
-
-        {phase.state === 'done' && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-            className="flex flex-col items-center justify-center gap-4 text-center"
-          >
-            <div className="glass flex size-20 items-center justify-center rounded-[28px]">
-              <CheckCircle2 className="size-9 text-emerald-500" strokeWidth={1.8} />
-            </div>
-            <div>
-              <div className="text-[16px] font-semibold">“{phase.result.draftName}” imported</div>
-              <p className="mt-1 max-w-sm text-[12.5px] text-muted-foreground">
-                Restart CapCut if it is open — the project will appear in your drafts list.
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="secondary"
-                className="rounded-full"
-                onClick={() => void window.capshare.revealPath(phase.result.folderPath)}
+              <motion.div
+                animate={dragging ? { y: -6, scale: 1.08 } : { y: 0, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+                className="glass flex size-20 items-center justify-center rounded-[28px]"
               >
-                Reveal folder
-              </Button>
-              <Button className="rounded-full" onClick={() => void launchCapCut()}>
-                <Rocket className="size-4" /> Open CapCut
-              </Button>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="rounded-full text-muted-foreground"
-              onClick={() => setPhase({ state: 'idle' })}
+                <FileUp className="size-9 text-primary" strokeWidth={1.7} />
+              </motion.div>
+              <div className="text-center">
+                <div className="text-[15px] font-semibold">
+                  {dragging ? 'Drop to import' : 'Drop a .capshare file here'}
+                </div>
+                <div className="mt-1 text-[12px] text-muted-foreground">
+                  or click to browse — double-clicking a .capshare file works too
+                </div>
+              </div>
+            </motion.button>
+          )}
+
+          {phase.state === 'inspecting' && (
+            <motion.div
+              key="inspecting"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex flex-col items-center justify-center gap-3"
             >
-              Import another
-            </Button>
-          </motion.div>
-        )}
+              <Loader2 className="size-7 animate-spin text-primary" />
+              <div className="text-[13px] text-muted-foreground">Reading project…</div>
+            </motion.div>
+          )}
+
+          {(phase.state === 'preview' || phase.state === 'running') && (
+            <PreviewCard
+              key="preview"
+              preview={phase.state === 'preview' ? phase.preview : phase.preview}
+              running={phase.state === 'running'}
+              ratio={phase.state === 'running' ? phase.ratio : 0}
+              onImport={startImport}
+              onDiscard={() => setPhase({ state: 'idle' })}
+            />
+          )}
+
+          {phase.state === 'done' && (
+            <motion.div
+              key="done"
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+              className="flex flex-col items-center justify-center gap-4 text-center"
+            >
+              <div className="glass flex size-20 items-center justify-center rounded-[28px]">
+                <CheckCircle2 className="size-9 text-emerald-500" strokeWidth={1.8} />
+              </div>
+              <div>
+                <div className="text-[16px] font-semibold">“{phase.result.draftName}” imported</div>
+                <p className="mt-1 max-w-sm text-[12.5px] text-muted-foreground">
+                  Restart CapCut if it is open — the project will appear in your drafts list.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  className="rounded-full"
+                  onClick={() => void window.capshare.revealPath(phase.result.folderPath)}
+                >
+                  Reveal folder
+                </Button>
+                <Button className="rounded-full" onClick={() => void launchCapCut()}>
+                  <Rocket className="size-4" /> Open CapCut
+                </Button>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="rounded-full text-muted-foreground"
+                onClick={() => setPhase({ state: 'idle' })}
+              >
+                Import another
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <AlertDialog open={collisionOpen} onOpenChange={setCollisionOpen}>
@@ -286,6 +301,7 @@ function PreviewCard({
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8, scale: 0.98 }}
       transition={{ type: 'spring', stiffness: 320, damping: 26 }}
       className="glass my-auto w-full max-w-xl overflow-hidden rounded-3xl"
     >

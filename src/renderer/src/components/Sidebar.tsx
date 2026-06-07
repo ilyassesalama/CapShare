@@ -1,4 +1,5 @@
 import type { JSX } from 'react'
+import { motion } from 'motion/react'
 import { FolderOpen, Import, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { isMacLike } from '@/lib/format'
@@ -35,19 +36,29 @@ export function Sidebar({ view, onNavigate }: SidebarProps): JSX.Element {
 
       <nav className="app-no-drag flex flex-col gap-1">
         {NAV.map(({ view: itemView, label, icon: Icon }) => (
-          <button
+          <motion.button
             key={itemView}
             onClick={() => onNavigate(itemView)}
+            whileHover={{ scale: 1.015 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
             className={cn(
-              'flex items-center gap-3 rounded-xl px-3 py-2 text-left text-[13px] font-medium transition-all duration-150',
+              'relative flex items-center gap-3 rounded-xl px-3 py-2 text-left text-[13px] font-medium',
               view === itemView
-                ? 'glass-subtle text-foreground shadow-sm'
+                ? 'text-foreground'
                 : 'text-muted-foreground hover:bg-sidebar-accent hover:text-foreground'
             )}
           >
-            <Icon className="size-4" strokeWidth={2.2} />
-            {label}
-          </button>
+            {view === itemView && (
+              <motion.span
+                layoutId="sidebar-active-pill"
+                className="glass-subtle absolute inset-0 rounded-xl shadow-sm"
+                transition={{ type: 'spring', stiffness: 480, damping: 36 }}
+              />
+            )}
+            <Icon className="relative z-10 size-4" strokeWidth={2.2} />
+            <span className="relative z-10">{label}</span>
+          </motion.button>
         ))}
       </nav>
     </aside>

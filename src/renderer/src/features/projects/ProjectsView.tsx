@@ -21,6 +21,13 @@ export function ProjectsView({
   onPickDraftRoot
 }: ProjectsViewProps): JSX.Element {
   const [selected, setSelected] = useState<DraftSummary | null>(null)
+  // `selected` survives close so the dialog can animate out with its content.
+  const [detailOpen, setDetailOpen] = useState(false)
+
+  const openDetail = (project: DraftSummary): void => {
+    setSelected(project)
+    setDetailOpen(true)
+  }
 
   return (
     <div className="flex h-full flex-col">
@@ -45,7 +52,7 @@ export function ProjectsView({
         </Button>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6">
+      <div className="min-h-0 flex-1 overflow-y-auto px-6 pt-2 pb-6">
         {loading && !projects ? (
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -80,14 +87,14 @@ export function ProjectsView({
                 key={project.draftId + project.folderPath}
                 project={project}
                 index={index}
-                onOpen={setSelected}
+                onOpen={openDetail}
               />
             ))}
           </div>
         )}
       </div>
 
-      <ProjectDetail project={selected} onClose={() => setSelected(null)} />
+      <ProjectDetail project={selected} open={detailOpen} onClose={() => setDetailOpen(false)} />
     </div>
   )
 }
