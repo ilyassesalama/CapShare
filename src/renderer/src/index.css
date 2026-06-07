@@ -1,0 +1,238 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+/* ---------------------------------------------------------------------------
+ * CapShare — macOS 26 "Liquid Glass" design tokens
+ *
+ * Surfaces are translucent and rely on backdrop blur over the in-app
+ * wallpaper (see <Wallpaper/>). Radii follow Apple's concentricity rule:
+ * outer = inner + gap. SF Pro on macOS, Inter/system on Windows.
+ * ------------------------------------------------------------------------- */
+
+:root {
+  --radius: 0.875rem;
+
+  --background: oklch(0.985 0.002 247.839);
+  --foreground: oklch(0.21 0.006 285.885);
+
+  /* Translucent navigation-layer surfaces (glass) */
+  --card: oklch(1 0 0 / 62%);
+  --card-foreground: oklch(0.21 0.006 285.885);
+  --popover: oklch(1 0 0 / 78%);
+  --popover-foreground: oklch(0.21 0.006 285.885);
+
+  --primary: oklch(0.546 0.215 262.881);
+  --primary-foreground: oklch(0.985 0.002 247.839);
+  --secondary: oklch(0.92 0.004 286.32 / 70%);
+  --secondary-foreground: oklch(0.21 0.006 285.885);
+  --muted: oklch(0.92 0.004 286.32 / 55%);
+  --muted-foreground: oklch(0.485 0.011 285.938);
+  --accent: oklch(0.92 0.004 286.32 / 65%);
+  --accent-foreground: oklch(0.21 0.006 285.885);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0.002 247.839);
+
+  --border: oklch(0.45 0.01 285 / 14%);
+  --input: oklch(0.45 0.01 285 / 18%);
+  --ring: oklch(0.546 0.215 262.881 / 55%);
+
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+
+  --sidebar: transparent;
+  --sidebar-foreground: oklch(0.21 0.006 285.885);
+  --sidebar-primary: oklch(0.546 0.215 262.881);
+  --sidebar-primary-foreground: oklch(0.985 0.002 247.839);
+  --sidebar-accent: oklch(1 0 0 / 55%);
+  --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
+  --sidebar-border: oklch(0.45 0.01 285 / 10%);
+  --sidebar-ring: oklch(0.546 0.215 262.881 / 55%);
+
+  /* Track-lane colors for the mini timeline */
+  --track-video: oklch(0.62 0.19 255);
+  --track-audio: oklch(0.68 0.16 160);
+  --track-text: oklch(0.72 0.17 75);
+  --track-sticker: oklch(0.65 0.21 320);
+  --track-effect: oklch(0.6 0.18 20);
+
+  /* Glass material */
+  --glass-bg: oklch(1 0 0 / 48%);
+  --glass-bg-strong: oklch(1 0 0 / 70%);
+  --glass-border: oklch(1 0 0 / 55%);
+  --glass-highlight: oklch(1 0 0 / 85%);
+  --glass-shadow: oklch(0.2 0.02 285 / 14%);
+}
+
+.dark {
+  --background: oklch(0.16 0.006 285.823);
+  --foreground: oklch(0.97 0.001 286.375);
+
+  --card: oklch(0.27 0.006 286.033 / 52%);
+  --card-foreground: oklch(0.97 0.001 286.375);
+  --popover: oklch(0.25 0.006 286.033 / 82%);
+  --popover-foreground: oklch(0.97 0.001 286.375);
+
+  --primary: oklch(0.623 0.188 259.815);
+  --primary-foreground: oklch(0.985 0.002 247.839);
+  --secondary: oklch(0.32 0.006 286.033 / 70%);
+  --secondary-foreground: oklch(0.97 0.001 286.375);
+  --muted: oklch(0.32 0.006 286.033 / 55%);
+  --muted-foreground: oklch(0.712 0.013 286.067);
+  --accent: oklch(0.34 0.006 286.033 / 65%);
+  --accent-foreground: oklch(0.97 0.001 286.375);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.985 0.002 247.839);
+
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.623 0.188 259.815 / 60%);
+
+  --sidebar: transparent;
+  --sidebar-foreground: oklch(0.97 0.001 286.375);
+  --sidebar-primary: oklch(0.623 0.188 259.815);
+  --sidebar-primary-foreground: oklch(0.985 0.002 247.839);
+  --sidebar-accent: oklch(1 0 0 / 10%);
+  --sidebar-accent-foreground: oklch(0.97 0.001 286.375);
+  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-ring: oklch(0.623 0.188 259.815 / 60%);
+
+  --glass-bg: oklch(0.25 0.008 285 / 45%);
+  --glass-bg-strong: oklch(0.25 0.008 285 / 68%);
+  --glass-border: oklch(1 0 0 / 14%);
+  --glass-highlight: oklch(1 0 0 / 22%);
+  --glass-shadow: oklch(0 0 0 / 35%);
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 3px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 6px);
+  --radius-2xl: calc(var(--radius) + 12px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-track-video: var(--track-video);
+  --color-track-audio: var(--track-audio);
+  --color-track-text: var(--track-text);
+  --color-track-sticker: var(--track-sticker);
+  --color-track-effect: var(--track-effect);
+
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI Variable',
+    'Segoe UI', Inter, system-ui, sans-serif;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    /* Transparent so native vibrancy (mac) / mica (win11) shows through;
+       the <Wallpaper/> component paints the refractable backdrop. */
+    background: transparent;
+    @apply text-foreground font-sans antialiased;
+    user-select: none;
+  }
+}
+
+@layer utilities {
+  /* --- Liquid Glass materials (navigation layer only — not content) --- */
+  .glass {
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    box-shadow:
+      0 8px 32px var(--glass-shadow),
+      inset 0 1px 0 var(--glass-highlight);
+  }
+
+  .glass-strong {
+    background: var(--glass-bg-strong);
+    -webkit-backdrop-filter: blur(24px) saturate(190%);
+    backdrop-filter: blur(24px) saturate(190%);
+    border: 1px solid var(--glass-border);
+    box-shadow:
+      0 12px 40px var(--glass-shadow),
+      inset 0 1px 0 var(--glass-highlight);
+  }
+
+  .glass-subtle {
+    background: color-mix(in oklab, var(--glass-bg) 60%, transparent);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    backdrop-filter: blur(12px) saturate(160%);
+    border: 1px solid color-mix(in oklab, var(--glass-border) 60%, transparent);
+  }
+
+  /* Window drag regions for the frameless window */
+  .app-drag {
+    -webkit-app-region: drag;
+  }
+  .app-no-drag {
+    -webkit-app-region: no-drag;
+  }
+}
+
+/* Accessibility: honor reduced transparency / motion */
+@media (prefers-reduced-transparency: reduce) {
+  .glass,
+  .glass-strong,
+  .glass-subtle {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: var(--background);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

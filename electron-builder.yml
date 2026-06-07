@@ -1,0 +1,80 @@
+appId: co.lysi.capshare
+productName: CapShare
+directories:
+  buildResources: build
+# Uniform ad-hoc re-sign of the universal bundle (see build/mac-after-pack.cjs).
+afterPack: build/mac-after-pack.cjs
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!tests/*'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+asarUnpack:
+  - resources/**
+
+# Double-clicking a .capshare file opens it in CapShare.
+# macOS: written into CFBundleDocumentTypes; Windows: registered by the NSIS installer
+# (the portable build cannot persist registry associations).
+fileAssociations:
+  - ext: capshare
+    name: CapShare Project
+    description: Portable CapCut project bundle
+    mimeType: application/x-capshare
+    role: Editor
+    rank: Owner
+
+win:
+  executableName: CapShare
+  target:
+    - target: nsis
+      arch:
+        - x64
+        - arm64
+    - target: portable
+      arch:
+        - x64
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  artifactName: ${name}-${version}-setup.${ext}
+  shortcutName: ${productName}
+  uninstallDisplayName: ${productName}
+  createDesktopShortcut: always
+portable:
+  artifactName: ${name}-${version}-portable.${ext}
+
+mac:
+  # Signing is done by build/mac-after-pack.cjs: one uniform ad-hoc deep sign of
+  # the merged universal bundle (required on Apple Silicon to launch at all).
+  # electron-builder's own per-pass signing is disabled — it re-signs the main
+  # executable after our hook, mismatching the framework's ad-hoc identity.
+  # Recipients right-click → Open on first launch (documented in README).
+  identity: null
+  category: public.app-category.video
+  target:
+    - target: dmg
+      arch: universal
+    - target: zip
+      arch: universal
+  entitlementsInherit: build/entitlements.mac.plist
+  extendInfo:
+    UTExportedTypeDeclarations:
+      - UTTypeIdentifier: co.lysi.capshare.project
+        UTTypeDescription: CapShare Project
+        UTTypeConformsTo:
+          - public.data
+          - public.archive
+        UTTypeTagSpecification:
+          public.filename-extension:
+            - capshare
+          public.mime-type:
+            - application/x-capshare
+  notarize: false
+dmg:
+  artifactName: ${name}-${version}.${ext}
+
+npmRebuild: false

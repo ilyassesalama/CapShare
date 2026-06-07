@@ -1,0 +1,53 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4F7DF9"/>
+      <stop offset="0.5" stop-color="#6A5CF6"/>
+      <stop offset="1" stop-color="#9D4DF0"/>
+    </linearGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.32"/>
+      <stop offset="0.45" stop-color="#FFFFFF" stop-opacity="0.06"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="262" y1="262" x2="762" y2="762" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="22" flood-color="#1B1464" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- macOS squircle-ish canvas -->
+  <rect x="0" y="0" width="1024" height="1024" rx="234" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1024" height="1024" rx="234" fill="url(#sheen)"/>
+
+  <!-- glass card: a project tile -->
+  <g filter="url(#soft)">
+    <rect x="252" y="282" width="520" height="460" rx="96" fill="url(#glass)" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="6"/>
+  </g>
+  <!-- film perforations -->
+  <g fill="#FFFFFF" fill-opacity="0.85">
+    <rect x="316" y="346" width="64" height="44" rx="16"/>
+    <rect x="316" y="426" width="64" height="44" rx="16"/>
+    <rect x="316" y="506" width="64" height="44" rx="16"/>
+    <rect x="316" y="586" width="64" height="44" rx="16"/>
+    <rect x="644" y="346" width="64" height="44" rx="16"/>
+    <rect x="644" y="426" width="64" height="44" rx="16"/>
+    <rect x="644" y="506" width="64" height="44" rx="16"/>
+    <rect x="644" y="586" width="64" height="44" rx="16"/>
+  </g>
+  <!-- play wedge -->
+  <path d="M462 416 L588 492 a14 14 0 0 1 0 24 L462 592 a14 14 0 0 1 -21 -12 V428 a14 14 0 0 1 21 -12 Z" fill="#FFFFFF" fill-opacity="0.95"/>
+
+  <!-- share arc: swap arrows under the tile -->
+  <g stroke="#FFFFFF" stroke-width="44" stroke-linecap="round" fill="none">
+    <path d="M330 818 a 182 96 0 0 1 174 -62"/>
+    <path d="M694 838 a 182 96 0 0 1 -174 62" opacity="0.9"/>
+  </g>
+  <g fill="#FFFFFF">
+    <path d="M504 716 l64 40 -64 40 z"/>
+    <path d="M520 940 l-64 -40 64 -40 z" opacity="0.9"/>
+  </g>
+</svg>
