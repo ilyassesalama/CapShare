@@ -38,7 +38,9 @@ export function createMainWindow(): BrowserWindow {
             symbolColor: nativeTheme.shouldUseDarkColors ? '#e4e4e7' : '#3f3f46',
             height: 56
           },
-          backgroundMaterial: 'mica' as const
+          // Acrylic blurs whatever is behind the window (mica only tints from
+          // the wallpaper) — matches the macOS under-window vibrancy look.
+          backgroundMaterial: 'acrylic' as const
         }
       : {}),
     ...(process.platform === 'linux' ? { icon } : {}),
@@ -80,7 +82,6 @@ export function createMainWindow(): BrowserWindow {
     })
   }
 
-  // External links open in the default browser, never inside the app.
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }

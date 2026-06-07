@@ -75,7 +75,6 @@ export async function exportDraft(options: ExportDraftOptions): Promise<ExportRe
     throw new CapShareError('DRAFT_NOT_FOUND', `No CapCut timeline found in ${draftFolder}`)
   }
 
-  // --- Snapshot the JSONs (consistency anchor) -------------------------------
   const timelineRaw = await readFile(paths.timelinePath)
   let timeline: Record<string, unknown>
   try {
@@ -98,7 +97,6 @@ export async function exportDraft(options: ExportDraftOptions): Promise<ExportRe
     }
   }
 
-  // --- Plan: classify referenced paths ---------------------------------------
   const draftFolderJson = toJsonPath(draftFolder)
   const scanned = [
     ...collectPaths(timeline, { draftFolderJson }),
@@ -161,14 +159,12 @@ export async function exportDraft(options: ExportDraftOptions): Promise<ExportRe
           })
         }
       } else if (/\.[A-Za-z0-9]{2,4}$/.test(item.normalized) && !missingSeen.has(key)) {
-        // Looks like a media file reference that is gone.
         missingSeen.add(key)
         missingAtExport.push(item.normalized)
       }
     }
   }
 
-  // --- Plan: draft folder walk -----------------------------------------------
   const timelineNames = new Set<string>(TIMELINE_FILENAMES)
   const leanSkips = new Set<string>(REGENERABLE_DIRS)
   const skip = (relPath: string, isDir: boolean): boolean => {
@@ -178,7 +174,6 @@ export async function exportDraft(options: ExportDraftOptions): Promise<ExportRe
     const base = relPath.split('/').pop() ?? relPath
     if (JUNK_FILE_NAMES.has(base)) return true
     if (VOLATILE_FILE_PATTERNS.some((re) => re.test(base))) return true
-    // Snapshotted separately:
     if (relPath === DRAFT_META_FILENAME) return true
     if (timelineNames.has(relPath)) return true
     return false
@@ -202,7 +197,6 @@ export async function exportDraft(options: ExportDraftOptions): Promise<ExportRe
     [...loosePlans.values()].reduce((sum, l) => sum + l.size, 0) +
     (coverBuffer?.length ?? 0)
 
-  // --- Write the archive ------------------------------------------------------
   let processed = 0
   const onBytes = (n: number): void => {
     processed += n

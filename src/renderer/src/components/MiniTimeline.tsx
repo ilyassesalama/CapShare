@@ -48,7 +48,6 @@ export function MiniTimeline({ tracks, durationUs }: MiniTimelineProps): JSX.Ele
               const width = Math.max((segment.durationUs / durationUs) * 100, 0.75)
               return (
                 <Tooltip key={segmentIndex}>
-                  {/* Base UI replaces Radix's asChild with a render prop. */}
                   <TooltipTrigger
                     render={
                       <div

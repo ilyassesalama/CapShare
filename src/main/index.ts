@@ -31,7 +31,6 @@ function handleOpenFile(filePath: string): void {
   }
 }
 
-// --- Single instance -------------------------------------------------------
 const gotTheLock = app.requestSingleInstanceLock()
 if (!gotTheLock) {
   app.quit()
@@ -69,7 +68,6 @@ if (!gotTheLock) {
       }
     })
 
-    // Windows/Linux cold start with a file argument.
     const startupFile = extractCapshareArg(process.argv.slice(1))
     if (startupFile) pendingOpenFile = startupFile
 

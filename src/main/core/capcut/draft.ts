@@ -77,8 +77,6 @@ export async function parseDraft(folder: string): Promise<ParsedDraft> {
   return { paths, timeline, meta }
 }
 
-// --- Summary building --------------------------------------------------------
-
 const TRACK_TYPE_MAP: Record<string, TrackType> = {
   video: 'video',
   audio: 'audio',
@@ -135,9 +133,7 @@ function buildMaterialLabels(materials: Record<string, unknown> | null): Map<str
         const parsed = JSON.parse(content) as Record<string, unknown>
         const textValue = asString(parsed['text'])
         if (textValue) labels.set(id, textValue.slice(0, 60))
-      } catch {
-        // Best-effort only.
-      }
+      } catch {}
     }
   }
   return labels

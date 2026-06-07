@@ -25,7 +25,9 @@ export default defineConfig(
     },
     rules: {
       ...eslintPluginReactHooks.configs.recommended.rules,
-      ...eslintPluginReactRefresh.configs.vite.rules
+      ...eslintPluginReactRefresh.configs.vite.rules,
+      // `catch {}` is the intentional best-effort pattern in the core pipelines.
+      'no-empty': ['error', { allowEmptyCatch: true }]
     }
   },
   {

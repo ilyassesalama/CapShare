@@ -32,8 +32,6 @@ import {
   type CapShareManifest
 } from './manifest'
 
-// --- Inspection ---------------------------------------------------------------
-
 export interface CollisionInfo {
   existingName: string
   existingFolderPath: string
@@ -71,9 +69,7 @@ export async function findCollision(
         if (meta['draft_id'] === draftId) {
           return { existingName: name, existingFolderPath: folder }
         }
-      } catch {
-        // Unreadable meta — not a collision signal.
-      }
+      } catch {}
     }
   }
   return null
@@ -153,8 +149,6 @@ export async function inspectCapshare(
   }
 }
 
-// --- Import -------------------------------------------------------------------
-
 export interface ImportCapshareOptions {
   filePath: string
   env: CapCutEnv
@@ -185,9 +179,7 @@ export async function probeTargetTimelineFilename(
       const paths = findTimelinePath(join(env.draftRoot, name))
       if (paths) counts[paths.timelineFilename]++
     }
-  } catch {
-    // No evidence — fall through to OS default.
-  }
+  } catch {}
   const total = counts['draft_info.json'] + counts['draft_content.json']
   if (total === 0) {
     return { primary: TIMELINE_FILENAME_FOR_OS[env.os], writeBoth: true }
@@ -269,7 +261,6 @@ export async function importCapshare(options: ImportCapshareOptions): Promise<Im
   )!
   const manifest = parseManifest(manifestRaw.toString('utf8'))
 
-  // --- Resolve naming & collision --------------------------------------------
   let finalName = manifest.source.draftName
   let draftId = manifest.source.draftId
   let timelineId: string | null = null // null = keep source timeline id
@@ -277,9 +268,7 @@ export async function importCapshare(options: ImportCapshareOptions): Promise<Im
   const taken = new Set<string>()
   try {
     for (const name of await readdir(env.draftRoot)) taken.add(name)
-  } catch {
-    // Draft root unreadable → the extract below will fail with a clearer error.
-  }
+  } catch {}
 
   if (preview.collision) {
     if (!options.resolution) {
@@ -308,11 +297,9 @@ export async function importCapshare(options: ImportCapshareOptions): Promise<Im
 
   const names: StagedNames = { finalName, folderBase, draftId, timelineId }
 
-  // --- Stage ------------------------------------------------------------------
   const stagingDir = join(env.draftRoot, `.capshare-staging-${Date.now()}`)
   await ensureDir(stagingDir)
 
-  // Loose media: archive entry → Resources/local/<unique name>.
   const looseTargets = new Map<string, { newRel: string; originalPath: string }>()
   const usedLocalNames = new Set<string>()
   for (const loose of manifest.looseMedia) {
@@ -355,7 +342,6 @@ export async function importCapshare(options: ImportCapshareOptions): Promise<Im
       }
     })
 
-    // --- Rewrite the staged draft ---------------------------------------------
     const stagedPaths = findTimelinePath(stagingDir)
     if (!stagedPaths) {
       throw new CapShareError('ARCHIVE_INVALID', 'Archive contains no timeline file.')
@@ -428,7 +414,6 @@ export async function importCapshare(options: ImportCapshareOptions): Promise<Im
       meta['draft_root_path'] = toJsonPath(env.draftRoot)
       meta['draft_removable_storage_device'] = ''
 
-      // Record where relocated loose media came from.
       const copiedInfo = Array.isArray(meta['draft_materials_copied_info'])
         ? (meta['draft_materials_copied_info'] as Record<string, unknown>[])
         : []
@@ -438,7 +423,6 @@ export async function importCapshare(options: ImportCapshareOptions): Promise<Im
       meta['draft_materials_copied_info'] = copiedInfo
     }
 
-    // --- Timeline filename for the target generation ---------------------------
     const probe = await probeTargetTimelineFilename(env)
     const timelineJson = JSON.stringify(timeline)
     await writeFile(join(stagingDir, probe.primary), timelineJson)
@@ -452,7 +436,6 @@ export async function importCapshare(options: ImportCapshareOptions): Promise<Im
       await writeFile(join(stagingDir, DRAFT_META_FILENAME), JSON.stringify(meta))
     }
 
-    // --- Restore effect-cache assets (additive, idempotent) --------------------
     if (manifest.effectAssets.length > 0) {
       await extractZip(filePath, env.cacheDir, {
         signal,
@@ -460,13 +443,11 @@ export async function importCapshare(options: ImportCapshareOptions): Promise<Im
         mapEntry: (entryName) => {
           if (!entryName.startsWith(EFFECT_ASSET_PREFIX)) return null
           const suffix = entryName.slice(EFFECT_ASSET_PREFIX.length)
-          // Never overwrite existing cache files.
           return existsSync(join(env.cacheDir, ...suffix.split('/'))) ? null : suffix
         }
       })
     }
 
-    // --- Swap into place --------------------------------------------------------
     if (preview.collision && options.resolution === 'replace') {
       await ensureDir(options.backupDir)
       movedExistingTo = join(options.backupDir, `${preview.collision.existingName}-${Date.now()}`)
@@ -476,7 +457,6 @@ export async function importCapshare(options: ImportCapshareOptions): Promise<Im
 
     await rename(stagingDir, finalFolder)
 
-    // --- Registry (best-effort; scan discovery is the fallback) ----------------
     try {
       const metaCreate =
         meta && typeof meta['tm_draft_create'] === 'number'
@@ -507,7 +487,6 @@ export async function importCapshare(options: ImportCapshareOptions): Promise<Im
       )
     }
   } catch (error) {
-    // Roll back: remove staging; if we already moved the old draft out, put it back.
     await rm(stagingDir, { recursive: true, force: true })
     if (movedExistingTo && preview.collision) {
       await rename(movedExistingTo, preview.collision.existingFolderPath).catch(() => {})
@@ -515,7 +494,6 @@ export async function importCapshare(options: ImportCapshareOptions): Promise<Im
     throw CapShareError.wrap(error, 'IMPORT_FAILED')
   }
 
-  // --- Post-verify --------------------------------------------------------------
   try {
     const finalPaths = findTimelinePath(finalFolder)
     if (finalPaths) {

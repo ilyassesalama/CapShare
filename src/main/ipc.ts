@@ -31,8 +31,6 @@ export function notifyOpenFile(window: BrowserWindow, filePath: string): void {
   window.webContents.send(IPC.openFile, filePath)
 }
 
-// --- Helpers -------------------------------------------------------------------
-
 function ok<T>(data: T): IpcResult<T> {
   return { ok: true, data }
 }

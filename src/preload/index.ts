@@ -77,7 +77,21 @@ const api = {
     ipcRenderer.invoke(IPC.pickFolder, title),
 
   /** Resolves the filesystem path of a dropped File (File.path was removed in modern Electron). */
-  getPathForFile: (file: File): string => webUtils.getPathForFile(file)
+  getPathForFile: (file: File): string => webUtils.getPathForFile(file),
+
+  /**
+   * Whether the window sits on a native translucent material (macOS vibrancy /
+   * Windows 11 acrylic). When true the renderer leaves the backdrop to the OS;
+   * when false it paints its own gradient wallpaper fallback.
+   */
+  env: {
+    platform: process.platform as NodeJS.Platform,
+    // Windows 11 22H2 (build 22621) is the floor for reliable acrylic/mica.
+    nativeMaterial:
+      process.platform === 'darwin' ||
+      (process.platform === 'win32' &&
+        Number(process.getSystemVersion().split('.')[2] ?? 0) >= 22621)
+  }
 }
 
 export type CapShareApi = typeof api

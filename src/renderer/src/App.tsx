@@ -58,16 +58,13 @@ function App(): JSX.Element {
     [refreshProjects]
   )
 
-  // Boot: load settings + projects, announce readiness, accept open-file events.
   useEffect(() => {
     let disposed = false
     const boot = async (): Promise<void> => {
       try {
         const loaded = unwrap(await window.capshare.getSettings())
         if (!disposed) setSettings(loaded)
-      } catch {
-        // Defaults apply.
-      }
+      } catch {}
       await refreshProjects()
       const pending = await window.capshare.rendererReady()
       if (pending && !disposed) {

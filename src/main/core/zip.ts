@@ -96,8 +96,6 @@ export class ZipWriter {
   }
 }
 
-// --- Reading -----------------------------------------------------------------
-
 function openZip(path: string): Promise<yauzl.ZipFile> {
   return new Promise((resolve, reject) => {
     yauzl.open(path, { lazyEntries: true, autoClose: false }, (err, zip) => {

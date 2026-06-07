@@ -121,9 +121,7 @@ export function walkJsonStrings(
           const innerChanged = walkInner(inner, `${pointer}~json`)
           if (innerChanged) return JSON.stringify(inner)
         }
-      } catch {
-        // Not valid JSON — leave untouched.
-      }
+      } catch {}
     }
     return undefined
   }
@@ -177,8 +175,6 @@ export function collectPaths(root: unknown, ctx: ScanContext = {}): ScannedStrin
   })
   return found
 }
-
-// --- Rewriting --------------------------------------------------------------
 
 export type RewriteRule =
   | { kind: 'exact'; from: string; to: string }
