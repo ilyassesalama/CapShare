@@ -22,6 +22,8 @@
     "typecheck": "pnpm run typecheck:node && pnpm run typecheck:web",
     "test": "vitest run",
     "test:watch": "vitest",
+    "clean": "node -e \"['out','dist','.eslintcache','.vite'].forEach((p) => require('fs').rmSync(p, { recursive: true, force: true }))\"",
+    "clean:all": "pnpm run clean && node -e \"require('fs').rmSync('node_modules', { recursive: true, force: true })\"",
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
     "build": "pnpm run typecheck && electron-vite build",
