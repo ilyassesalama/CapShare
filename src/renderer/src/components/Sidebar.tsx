@@ -1,20 +1,63 @@
 import type { JSX } from 'react'
+import { useState } from 'react'
 import { motion } from 'motion/react'
-import { FolderOpen, Import, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { isMacLike } from '@/lib/format'
+import { Clapperboard } from '@/components/animate-ui/icons/clapperboard'
+import { CloudDownload } from '@/components/animate-ui/icons/cloud-download'
+import { Settings } from '@/components/animate-ui/icons/settings'
 
 export type View = 'projects' | 'import' | 'settings'
 
-const NAV: { view: View; label: string; icon: typeof FolderOpen }[] = [
-  { view: 'projects', label: 'Projects', icon: FolderOpen },
-  { view: 'import', label: 'Import', icon: Import },
+type AnimatedIcon = typeof Clapperboard
+
+const NAV: { view: View; label: string; icon: AnimatedIcon }[] = [
+  { view: 'projects', label: 'Projects', icon: Clapperboard },
+  { view: 'import', label: 'Import', icon: CloudDownload },
   { view: 'settings', label: 'Settings', icon: Settings }
 ]
 
 interface SidebarProps {
   view: View
   onNavigate: (view: View) => void
+}
+
+interface NavItemProps {
+  item: (typeof NAV)[number]
+  active: boolean
+  onSelect: () => void
+}
+
+/** Single nav button; animates its icon on hover and while active. */
+function NavItem({ item: { label, icon: Icon }, active, onSelect }: NavItemProps): JSX.Element {
+  const [hovered, setHovered] = useState(false)
+
+  return (
+    <motion.button
+      onClick={onSelect}
+      onHoverStart={() => setHovered(true)}
+      onHoverEnd={() => setHovered(false)}
+      whileHover={{ scale: 1.015 }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+      className={cn(
+        'relative flex items-center gap-3 rounded-xl px-3 py-2 text-left text-[13px] font-medium',
+        active
+          ? 'text-foreground'
+          : 'text-muted-foreground hover:bg-sidebar-accent hover:text-foreground'
+      )}
+    >
+      {active && (
+        <motion.span
+          layoutId="sidebar-active-pill"
+          className="glass-subtle absolute inset-0 rounded-xl shadow-sm"
+          transition={{ type: 'spring', stiffness: 480, damping: 36 }}
+        />
+      )}
+      <Icon className="relative z-10" size={16} animate={hovered || active} />
+      <span className="relative z-10">{label}</span>
+    </motion.button>
+  )
 }
 
 /** Floating Tahoe-style glass sidebar (navigation layer). */
@@ -35,30 +78,13 @@ export function Sidebar({ view, onNavigate }: SidebarProps): JSX.Element {
       </div>
 
       <nav className="app-no-drag flex flex-col gap-1">
-        {NAV.map(({ view: itemView, label, icon: Icon }) => (
-          <motion.button
-            key={itemView}
-            onClick={() => onNavigate(itemView)}
-            whileHover={{ scale: 1.015 }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-            className={cn(
-              'relative flex items-center gap-3 rounded-xl px-3 py-2 text-left text-[13px] font-medium',
-              view === itemView
-                ? 'text-foreground'
-                : 'text-muted-foreground hover:bg-sidebar-accent hover:text-foreground'
-            )}
-          >
-            {view === itemView && (
-              <motion.span
-                layoutId="sidebar-active-pill"
-                className="glass-subtle absolute inset-0 rounded-xl shadow-sm"
-                transition={{ type: 'spring', stiffness: 480, damping: 36 }}
-              />
-            )}
-            <Icon className="relative z-10 size-4" strokeWidth={2.2} />
-            <span className="relative z-10">{label}</span>
-          </motion.button>
+        {NAV.map((item) => (
+          <NavItem
+            key={item.view}
+            item={item}
+            active={view === item.view}
+            onSelect={() => onNavigate(item.view)}
+          />
         ))}
       </nav>
     </aside>

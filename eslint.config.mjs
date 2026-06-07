@@ -32,11 +32,17 @@ export default defineConfig(
   },
   {
     // shadcn/ui generated components — vendored code, exempt from house style.
-    files: ['src/renderer/src/components/ui/**/*.{ts,tsx}', 'src/renderer/src/hooks/**/*.ts'],
+    files: [
+      'src/renderer/src/components/ui/**/*.{ts,tsx}',
+      'src/renderer/src/components/animate-ui/**/*.{ts,tsx}',
+      'src/renderer/src/hooks/**/*.{ts,tsx}'
+    ],
     rules: {
       '@typescript-eslint/explicit-function-return-type': 'off',
       'react-refresh/only-export-components': 'off',
       'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/static-components': 'off',
+      'react-hooks/refs': 'off',
       'react-hooks/purity': 'off',
       'react/prop-types': 'off'
     }
