@@ -34,16 +34,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Decode App Store Connect API key (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          mkdir -p ~/private_keys
-          echo "$APPLE_API_KEY_BASE64" | base64 --decode > ~/private_keys/AuthKey_${APPLE_API_KEY_ID}.p8
-          echo "APPLE_API_KEY=$HOME/private_keys/AuthKey_${APPLE_API_KEY_ID}.p8" >> "$GITHUB_ENV"
-        env:
-          APPLE_API_KEY_BASE64: ${{ secrets.APPLE_API_KEY_BASE64 }}
-          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
-
       - name: Build & publish (macOS)
         if: runner.os == 'macOS'
         run: pnpm run build && pnpm exec electron-builder --mac --publish always
@@ -52,9 +42,10 @@ jobs:
           # Developer ID Application cert (.p12, base64) + its password.
           CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
-          # Notarization via App Store Connect API key (decoded above).
-          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
-          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          # Notarization via Apple ID + app-specific password + Team ID.
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
       - name: Build & publish (Windows)
         if: runner.os == 'Windows'
