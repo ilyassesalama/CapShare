@@ -1,0 +1,9 @@
+# Normalize all text files to LF on checkout (incl. Windows) so Prettier/ESLint
+# don't flag CRLF (\r) on windows-latest CI runners.
+* text=auto eol=lf
+
+# Binary assets — never normalize or diff as text.
+*.png binary
+*.ico binary
+*.icns binary
+*.capshare binary

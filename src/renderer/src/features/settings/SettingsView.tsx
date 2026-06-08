@@ -141,13 +141,7 @@ export function SettingsView({ settings, onChange }: SettingsViewProps): JSX.Ele
   )
 }
 
-function SettingsGroup({
-  title,
-  children
-}: {
-  title: string
-  children: ReactNode
-}): JSX.Element {
+function SettingsGroup({ title, children }: { title: string; children: ReactNode }): JSX.Element {
   return (
     <section className="flex flex-col gap-2">
       <h2 className="px-1 text-[15px] font-semibold tracking-tight">{title}</h2>
