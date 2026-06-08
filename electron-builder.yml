@@ -53,18 +53,27 @@ portable:
   artifactName: ${name}-${version}-portable.${ext}
 
 mac:
-  # Signing is done by build/mac-after-pack.cjs: one uniform ad-hoc deep sign of
-  # the merged universal bundle (required on Apple Silicon to launch at all).
-  # electron-builder's own per-pass signing is disabled — it re-signs the main
-  # executable after our hook, mismatching the framework's ad-hoc identity.
-  # Recipients right-click → Open on first launch (documented in README).
-  identity: null
+  # Real signing path: when a Developer ID cert is available (auto-discovery on,
+  # or CSC_LINK/CSC_KEY_PASSWORD set in CI), electron-builder signs the merged
+  # universal bundle with hardened runtime and notarizes it via the App Store
+  # Connect API key (APPLE_API_KEY/_KEY_ID/_ISSUER env vars).
+  #
+  # Fallback path: set CSC_IDENTITY_AUTO_DISCOVERY=false (CI smoke test, or a
+  # contributor without the cert) and electron-builder skips signing — then
+  # build/mac-after-pack.cjs ad-hoc deep-signs the universal bundle so it still
+  # launches on Apple Silicon (recipients right-click → Open on first launch).
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  # Notarize only when API-key env vars are present (release CI); skipped for
+  # --dir and unsigned builds. Team ID (CUFPZ34729) comes from the Developer ID cert.
+  notarize: true
   category: public.app-category.video
   target:
     - target: dmg
       arch: universal
     - target: zip
       arch: universal
+  entitlements: build/entitlements.mac.plist
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
     UTExportedTypeDeclarations:
@@ -78,7 +87,6 @@ mac:
             - capshare
           public.mime-type:
             - application/x-capshare
-  notarize: false
 dmg:
   artifactName: ${name}-${version}.${ext}
 
