@@ -2,6 +2,11 @@ appId: co.lysi.capshare
 productName: CapShare
 directories:
   buildResources: build
+# Publish installers to GitHub Releases (used by `electron-builder --publish`).
+publish:
+  - provider: github
+    owner: ilyassesalama
+    repo: CapShare
 # Uniform ad-hoc re-sign of the universal bundle (see build/mac-after-pack.cjs).
 afterPack: build/mac-after-pack.cjs
 files:
