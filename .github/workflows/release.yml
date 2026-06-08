@@ -23,6 +23,10 @@ jobs:
         os: [macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v6
+        # On tag push `inputs.tag` is empty, so checkout uses the pushed tag;
+        # on manual dispatch it checks out the requested tag/version.
+        with:
+          ref: ${{ inputs.tag }}
 
       - uses: pnpm/action-setup@v6
 

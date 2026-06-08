@@ -11,10 +11,10 @@ const path = require('node:path')
 
 exports.default = async function macAfterPack(context) {
   if (context.electronPlatformName !== 'darwin') return
-  // Skip when real Developer ID signing is active — electron-builder signs (and
-  // notarizes) the merged bundle itself; an ad-hoc deep sign here would clobber
-  // that signature. Only ad-hoc sign in the fallback path, where signing is
-  // explicitly disabled via CSC_IDENTITY_AUTO_DISCOVERY=false.
+  // Only ad-hoc sign in the explicit fallback path (CSC_IDENTITY_AUTO_DISCOVERY
+  // =false). In every other case — including a real Developer ID build — we leave
+  // the bundle alone: electron-builder signs (and notarizes) it itself, and an
+  // ad-hoc deep sign here would clobber that signature.
   if (process.env.CSC_IDENTITY_AUTO_DISCOVERY !== 'false') return
   // Never touch the pre-merge per-arch packs (mac-universal-{x64,arm64}-temp):
   // altering them breaks @electron/universal's identical-SHA merge checks.
