@@ -16,8 +16,7 @@ exports.default = async function macAfterPack(context) {
   // the bundle alone: electron-builder signs (and notarizes) it itself, and an
   // ad-hoc deep sign here would clobber that signature.
   if (process.env.CSC_IDENTITY_AUTO_DISCOVERY !== 'false') return
-  // Never touch the pre-merge per-arch packs (mac-universal-{x64,arm64}-temp):
-  // altering them breaks @electron/universal's identical-SHA merge checks.
+  // Skip the pre-merge per-arch temp packs (see docblock).
   if (path.basename(context.appOutDir).endsWith('-temp')) return
   const appName = `${context.packager.appInfo.productFilename}.app`
   const appPath = path.join(context.appOutDir, appName)
