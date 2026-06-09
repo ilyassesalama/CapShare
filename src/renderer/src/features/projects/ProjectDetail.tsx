@@ -4,6 +4,7 @@ import { CheckCircle2, Clapperboard, FileDown, FolderOpen, X } from 'lucide-reac
 import { Button, Label, Modal, ProgressBar, Switch, toast } from '@heroui/react'
 import type { DraftSummary, ExportResult } from '@shared/types'
 import { MiniTimeline } from '@/components/MiniTimeline'
+import { kinematicScale } from '@/lib/dialog-anim'
 import { formatBytes, formatDuration, newTaskId } from '@/lib/format'
 import { errorMessage, unwrap } from '@/lib/ipc'
 
@@ -87,11 +88,12 @@ function DetailDialog({ project, open, onClose }: ProjectDetailProps): JSX.Eleme
     <Modal.Backdrop
       isOpen={open && project !== null}
       onOpenChange={(nextOpen) => !nextOpen && !exporting && onClose()}
-      variant="blur"
+      variant="opaque"
+      className={kinematicScale.backdrop}
       isDismissable={!exporting}
       isKeyboardDismissDisabled={exporting}
     >
-      <Modal.Container placement="center" size="lg">
+      <Modal.Container placement="center" size="lg" className={kinematicScale.container}>
         <Modal.Dialog
           aria-label={project?.name ?? 'Project details'}
           className="glass-strong w-full max-w-lg gap-0 overflow-hidden rounded-3xl border-none bg-white! p-0 dark:bg-[var(--glass-bg-strong)]!"

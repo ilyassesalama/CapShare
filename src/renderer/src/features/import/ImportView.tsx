@@ -12,6 +12,7 @@ import {
 import { AnimatePresence, motion } from 'motion/react'
 import { AlertDialog, Button, ProgressBar, toast } from '@heroui/react'
 import type { CollisionResolution, ImportPreview, ImportResult } from '@shared/types'
+import { kinematicScale } from '@/lib/dialog-anim'
 import { formatBytes, formatDate, formatDuration, newTaskId } from '@/lib/format'
 import { errorMessage, unwrap } from '@/lib/ipc'
 import { cn } from '@/lib/utils'
@@ -243,11 +244,12 @@ export function ImportView({
       <AlertDialog.Backdrop
         isOpen={collisionOpen}
         onOpenChange={setCollisionOpen}
-        variant="blur"
+        variant="opaque"
+        className={kinematicScale.backdrop}
         isDismissable
         isKeyboardDismissDisabled={false}
       >
-        <AlertDialog.Container placement="center" size="sm">
+        <AlertDialog.Container placement="center" size="sm" className={kinematicScale.container}>
           <AlertDialog.Dialog className="glass-strong rounded-3xl border-none">
             {({ close }) => (
               <>
