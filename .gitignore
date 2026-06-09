@@ -6,3 +6,8 @@ out
 *.log*
 out/
 /.vscode
+
+# Local signing/notarization secrets (electron-builder auto-loads .env)
+.env
+.env.*
+!.env.example
