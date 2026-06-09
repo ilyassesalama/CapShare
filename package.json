@@ -32,7 +32,7 @@
     "build:win": "pnpm run build && electron-builder --win",
     "build:mac": "pnpm run build && electron-builder --mac",
     "build:linux": "pnpm run build && electron-builder --linux",
-    "release": "npm version",
+    "release": "npm version -m \"release: v%s\"",
     "postversion": "git push --follow-tags"
   },
   "dependencies": {
