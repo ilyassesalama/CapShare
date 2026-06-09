@@ -3,6 +3,8 @@ import { electronApp, optimizer } from '@electron-toolkit/utils'
 import log from 'electron-log/main'
 import { createMainWindow } from './window'
 import { registerIpcHandlers, notifyOpenFile } from './ipc'
+import { setupUpdater } from './updater'
+import { buildAppMenu } from './menu'
 
 log.initialize()
 log.transports.file.level = 'info'
@@ -72,6 +74,9 @@ if (!gotTheLock) {
     if (startupFile) pendingOpenFile = startupFile
 
     mainWindow = createMainWindow()
+
+    const updater = setupUpdater({ getMainWindow: () => mainWindow })
+    buildAppMenu({ updater })
 
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) {

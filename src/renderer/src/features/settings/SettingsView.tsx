@@ -1,7 +1,8 @@
 import type { JSX, ReactNode } from 'react'
-import { FolderOpen, RotateCcw } from 'lucide-react'
+import { FolderOpen, RefreshCw, RotateCcw } from 'lucide-react'
 import { toast } from 'sonner'
-import type { AppSettings } from '@shared/types'
+import type { AppSettings, UpdateStatus } from '@shared/types'
+import type { UpdatesController } from '@/hooks/use-updates'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import {
@@ -23,9 +24,30 @@ const THEME_OPTIONS: { value: AppSettings['theme']; label: string }[] = [
 interface SettingsViewProps {
   settings: AppSettings | null
   onChange: (update: Partial<AppSettings>) => void
+  updates: UpdatesController
 }
 
-export function SettingsView({ settings, onChange }: SettingsViewProps): JSX.Element {
+/** Status line shown under the version row. */
+function updateHelp(status: UpdateStatus, version: string): string {
+  switch (status.state) {
+    case 'checking':
+      return 'Checking for updates…'
+    case 'available':
+      return `Downloading update ${status.version}…`
+    case 'downloading':
+      return `Downloading update… ${status.percent}%`
+    case 'downloaded':
+      return `Update ${status.version} ready — restart to install`
+    case 'not-available':
+      return `CapShare ${version} · up to date`
+    case 'error':
+      return status.message
+    default:
+      return version ? `CapShare ${version}` : 'CapShare'
+  }
+}
+
+export function SettingsView({ settings, onChange, updates }: SettingsViewProps): JSX.Element {
   if (!settings) return <div />
 
   const pickFolder = async (
@@ -134,6 +156,26 @@ export function SettingsView({ settings, onChange }: SettingsViewProps): JSX.Ele
                 ))}
               </SelectContent>
             </Select>
+          </SettingRow>
+        </SettingsGroup>
+
+        <SettingsGroup title="About">
+          <SettingRow label="Version" help={updateHelp(updates.status, updates.version)}>
+            {updates.status.state === 'downloaded' ? (
+              <Button className="rounded-full" onClick={updates.install}>
+                <RotateCcw className="size-4" /> Restart to update
+              </Button>
+            ) : (
+              <Button
+                variant="secondary"
+                className="rounded-full border border-input"
+                disabled={updates.busy}
+                onClick={updates.check}
+              >
+                <RefreshCw className={`size-4 ${updates.busy ? 'animate-spin' : ''}`} />
+                Check for updates
+              </Button>
+            )}
           </SettingRow>
         </SettingsGroup>
       </div>

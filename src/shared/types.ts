@@ -104,6 +104,19 @@ export interface ImportResult {
   warnings: string[]
 }
 
+/**
+ * Auto-update lifecycle, streamed from the main process (see src/main/updater.ts).
+ * The renderer reflects this in the Settings → About row and a "ready" toast.
+ */
+export type UpdateStatus =
+  | { state: 'idle' }
+  | { state: 'checking' }
+  | { state: 'available'; version: string }
+  | { state: 'not-available' }
+  | { state: 'downloading'; percent: number }
+  | { state: 'downloaded'; version: string }
+  | { state: 'error'; message: string }
+
 export interface AppSettings {
   /** Override for the CapCut draft root; null = auto-detect. */
   draftRootOverride: string | null

@@ -8,6 +8,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { ImportView } from '@/features/import/ImportView'
 import { ProjectsView } from '@/features/projects/ProjectsView'
 import { SettingsView } from '@/features/settings/SettingsView'
+import { useUpdates } from '@/hooks/use-updates'
 import { errorMessage, unwrap } from '@/lib/ipc'
 
 function useTheme(theme: AppSettings['theme'] | undefined): void {
@@ -30,6 +31,7 @@ function App(): JSX.Element {
   const [loadingProjects, setLoadingProjects] = useState(true)
   const [settings, setSettings] = useState<AppSettings | null>(null)
   const [externalFile, setExternalFile] = useState<string | null>(null)
+  const updates = useUpdates()
 
   useTheme(settings?.theme)
 
@@ -129,7 +131,11 @@ function App(): JSX.Element {
                     />
                   )}
                   {view === 'settings' && (
-                    <SettingsView settings={settings} onChange={(u) => void updateSettings(u)} />
+                    <SettingsView
+                      settings={settings}
+                      onChange={(u) => void updateSettings(u)}
+                      updates={updates}
+                    />
                   )}
                 </motion.div>
               </AnimatePresence>

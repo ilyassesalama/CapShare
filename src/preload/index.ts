@@ -7,7 +7,8 @@ import type {
   ImportResult,
   IpcResult,
   ProgressEvent,
-  ProjectsResponse
+  ProjectsResponse,
+  UpdateStatus
 } from '../shared/types'
 
 /**
@@ -78,6 +79,26 @@ const api = {
 
   /** Resolves the filesystem path of a dropped File (File.path was removed in modern Electron). */
   getPathForFile: (file: File): string => webUtils.getPathForFile(file),
+
+  /** The running app's version (e.g. "1.0.0"). */
+  getAppVersion: (): Promise<string> => ipcRenderer.invoke(IPC.getAppVersion),
+
+  /** Trigger a manual update check; resolves with the resulting status. */
+  checkForUpdates: (): Promise<UpdateStatus> => ipcRenderer.invoke(IPC.updateCheck),
+
+  /** Snapshot the current update status (for initial render). */
+  getUpdateStatus: (): Promise<UpdateStatus> => ipcRenderer.invoke(IPC.updateGetStatus),
+
+  /** Quit and install a downloaded update, relaunching afterwards. */
+  installUpdate: (): Promise<void> => ipcRenderer.invoke(IPC.updateInstall),
+
+  /** Subscribe to update status changes. Returns an unsubscribe function. */
+  onUpdateStatus: (callback: (status: UpdateStatus) => void): (() => void) => {
+    const handler = (_event: Electron.IpcRendererEvent, status: UpdateStatus): void =>
+      callback(status)
+    ipcRenderer.on(IPC.updateStatus, handler)
+    return () => ipcRenderer.removeListener(IPC.updateStatus, handler)
+  },
 
   /**
    * Whether the window sits on a native translucent material (macOS vibrancy /

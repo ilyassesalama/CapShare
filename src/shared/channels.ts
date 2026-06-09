@@ -25,7 +25,18 @@ export const IPC = {
   revealPath: 'app:reveal-path',
   launchCapCut: 'app:launch-capcut',
   isCapCutRunning: 'app:is-capcut-running',
-  pickFolder: 'app:pick-folder'
+  pickFolder: 'app:pick-folder',
+
+  /** invoke: the running app's version string. */
+  getAppVersion: 'app:get-version',
+  /** invoke: trigger a manual update check; resolves with the resulting status. */
+  updateCheck: 'update:check',
+  /** invoke: snapshot of the current update status. */
+  updateGetStatus: 'update:get-status',
+  /** invoke: quit and install a downloaded update. */
+  updateInstall: 'update:install',
+  /** event main→renderer: the update status changed. */
+  updateStatus: 'update:status'
 } as const
 
 export type IpcChannel = (typeof IPC)[keyof typeof IPC]
