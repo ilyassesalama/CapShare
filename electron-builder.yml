@@ -3,10 +3,14 @@ productName: CapShare
 directories:
   buildResources: build
 # Publish installers to GitHub Releases (used by `electron-builder --publish`).
+# releaseType: release uploads straight into a published (non-draft) release so
+# the CI run goes live with no manual step — must match the release type the
+# workflow's prepare job creates.
 publish:
   - provider: github
     owner: ilyassesalama
     repo: CapShare
+    releaseType: release
 # Uniform ad-hoc re-sign of the universal bundle (see build/mac-after-pack.cjs).
 afterPack: build/mac-after-pack.cjs
 files:

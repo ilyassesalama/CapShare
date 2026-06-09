@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag/version to publish (e.g. v0.1.0). Builds a draft release.'
+        description: 'Tag/version to publish (e.g. v1.0.0). Publishes a GitHub release.'
         required: true
 
 permissions:
@@ -16,19 +16,20 @@ permissions:
 jobs:
   # Runs once before the build matrix: guards against a tag/version mismatch
   # (electron-builder publishes to a release named after package.json's version,
-  # not the git tag) and pre-creates the release so the parallel macOS/Windows
-  # jobs upload into one release instead of racing to create duplicate drafts.
+  # not the git tag) and pre-creates the published release so the parallel
+  # macOS/Windows jobs upload into one release instead of racing to create
+  # duplicates. Release type must match electron-builder's releaseType: release.
   prepare:
     name: Verify & ensure release
     runs-on: ubuntu-latest
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
     steps:
       - uses: actions/checkout@v6
         with:
           ref: ${{ inputs.tag }}
 
       - name: Verify tag matches package.json version
-        env:
-          TAG: ${{ inputs.tag || github.ref_name }}
         run: |
           VERSION="v$(node -p "require('./package.json').version")"
           if [ "$TAG" != "$VERSION" ]; then
@@ -39,10 +40,9 @@ jobs:
       - name: Ensure GitHub release exists
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ inputs.tag || github.ref_name }}
         run: |
           gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
-            || gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --draft --title "$TAG" --generate-notes
+            || gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes
 
   release:
     name: Build & publish (${{ matrix.os }})
