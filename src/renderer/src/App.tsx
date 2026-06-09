@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useState, type JSX } from 'react'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
-import { toast, Toaster } from 'sonner'
+import { Toast, toast } from '@heroui/react'
 import type { AppSettings, ProjectsResponse } from '@shared/types'
 import { Sidebar, type View } from '@/components/Sidebar'
 import { Wallpaper } from '@/components/glass/Wallpaper'
-import { TooltipProvider } from '@/components/ui/tooltip'
 import { ImportView } from '@/features/import/ImportView'
 import { ProjectsView } from '@/features/projects/ProjectsView'
 import { SettingsView } from '@/features/settings/SettingsView'
@@ -42,7 +41,7 @@ function App(): JSX.Element {
       setProjects(response)
       for (const warning of response.warnings) toast.warning(warning)
     } catch (error) {
-      toast.error(errorMessage(error))
+      toast.danger(errorMessage(error))
     } finally {
       setLoadingProjects(false)
     }
@@ -55,7 +54,7 @@ function App(): JSX.Element {
         setSettings(next)
         if ('draftRootOverride' in update) void refreshProjects()
       } catch (error) {
-        toast.error(errorMessage(error))
+        toast.danger(errorMessage(error))
       }
     },
     [refreshProjects]
@@ -94,57 +93,55 @@ function App(): JSX.Element {
       )
       if (folder) await updateSettings({ draftRootOverride: folder })
     } catch (error) {
-      toast.error(errorMessage(error))
+      toast.danger(errorMessage(error))
     }
   }, [updateSettings])
 
   return (
-    <TooltipProvider delay={250}>
-      <MotionConfig reducedMotion="user">
-        <Wallpaper />
-        <div className="flex h-full">
-          <Sidebar view={view} onNavigate={setView} />
-          <main className="min-w-0 flex-1 py-3 pr-3">
-            <div className="glass relative h-full overflow-hidden rounded-3xl">
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div
-                  key={view}
-                  className="h-full"
-                  initial={{ opacity: 0, y: 8, scale: 0.995, filter: 'blur(10px)' }}
-                  animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-                  exit={{ opacity: 0, y: -6, scale: 0.995, filter: 'blur(8px)' }}
-                  transition={{ type: 'spring', stiffness: 650, damping: 42, mass: 0.8 }}
-                >
-                  {view === 'projects' && (
-                    <ProjectsView
-                      projects={projects}
-                      loading={loadingProjects}
-                      onRefresh={() => void refreshProjects()}
-                      onPickDraftRoot={() => void pickDraftRoot()}
-                    />
-                  )}
-                  {view === 'import' && (
-                    <ImportView
-                      externalFile={externalFile}
-                      onExternalFileConsumed={() => setExternalFile(null)}
-                      onImported={() => void refreshProjects()}
-                    />
-                  )}
-                  {view === 'settings' && (
-                    <SettingsView
-                      settings={settings}
-                      onChange={(u) => void updateSettings(u)}
-                      updates={updates}
-                    />
-                  )}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </main>
-        </div>
-        <Toaster position="bottom-right" richColors closeButton />
-      </MotionConfig>
-    </TooltipProvider>
+    <MotionConfig reducedMotion="user">
+      <Wallpaper />
+      <div className="flex h-full">
+        <Sidebar view={view} onNavigate={setView} />
+        <main className="min-w-0 flex-1 py-3 pr-3">
+          <div className="glass relative h-full overflow-hidden rounded-3xl">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={view}
+                className="h-full"
+                initial={{ opacity: 0, y: 8, scale: 0.995, filter: 'blur(10px)' }}
+                animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, y: -6, scale: 0.995, filter: 'blur(8px)' }}
+                transition={{ type: 'spring', stiffness: 650, damping: 42, mass: 0.8 }}
+              >
+                {view === 'projects' && (
+                  <ProjectsView
+                    projects={projects}
+                    loading={loadingProjects}
+                    onRefresh={() => void refreshProjects()}
+                    onPickDraftRoot={() => void pickDraftRoot()}
+                  />
+                )}
+                {view === 'import' && (
+                  <ImportView
+                    externalFile={externalFile}
+                    onExternalFileConsumed={() => setExternalFile(null)}
+                    onImported={() => void refreshProjects()}
+                  />
+                )}
+                {view === 'settings' && (
+                  <SettingsView
+                    settings={settings}
+                    onChange={(u) => void updateSettings(u)}
+                    updates={updates}
+                  />
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </main>
+      </div>
+      <Toast.Provider placement="bottom end" />
+    </MotionConfig>
   )
 }
 

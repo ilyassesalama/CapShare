@@ -1,8 +1,7 @@
 import { useState, type JSX } from 'react'
 import { FolderSearch, RefreshCw } from 'lucide-react'
+import { Button, Skeleton } from '@heroui/react'
 import type { DraftSummary, ProjectsResponse } from '@shared/types'
-import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { ProjectCard } from './ProjectCard'
 import { ProjectDetail } from './ProjectDetail'
@@ -42,10 +41,10 @@ export function ProjectsView({
         </div>
         <Button
           variant="ghost"
-          size="icon"
+          isIconOnly
           className="app-no-drag rounded-full"
-          onClick={onRefresh}
-          disabled={loading}
+          onPress={onRefresh}
+          isDisabled={loading}
           aria-label="Refresh projects"
         >
           <RefreshCw className={cn('size-4', loading && 'animate-spin')} />
@@ -70,7 +69,7 @@ export function ProjectsView({
             title="CapCut not found"
             body="CapShare couldn't locate a CapCut project folder on this machine. If CapCut is installed with a custom project location, point CapShare at it."
             action={
-              <Button onClick={onPickDraftRoot} className="rounded-full">
+              <Button onPress={onPickDraftRoot} className="rounded-full">
                 <FolderSearch className="size-4" /> Choose project folder…
               </Button>
             }

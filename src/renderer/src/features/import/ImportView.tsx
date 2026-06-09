@@ -10,20 +10,8 @@ import {
   Rocket
 } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
-import { toast } from 'sonner'
+import { AlertDialog, Button, ProgressBar, toast } from '@heroui/react'
 import type { CollisionResolution, ImportPreview, ImportResult } from '@shared/types'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from '@/components/ui/alert-dialog'
-import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
 import { formatBytes, formatDate, formatDuration, newTaskId } from '@/lib/format'
 import { errorMessage, unwrap } from '@/lib/ipc'
 import { cn } from '@/lib/utils'
@@ -68,7 +56,7 @@ export function ImportView({
       setPhase({ state: 'preview', preview })
     } catch (error) {
       setPhase({ state: 'idle' })
-      toast.error(errorMessage(error))
+      toast.danger(errorMessage(error))
     }
   }, [])
 
@@ -85,7 +73,7 @@ export function ImportView({
       const file = unwrap(await window.capshare.pickImportFile())
       if (file) await inspect(file)
     } catch (error) {
-      toast.error(errorMessage(error))
+      toast.danger(errorMessage(error))
     }
   }
 
@@ -96,7 +84,7 @@ export function ImportView({
     if (!file) return
     const path = window.capshare.getPathForFile(file)
     if (!path.toLowerCase().endsWith('.capshare')) {
-      toast.error('That is not a .capshare file.')
+      toast.danger('That is not a .capshare file.')
       return
     }
     void inspect(path)
@@ -113,11 +101,11 @@ export function ImportView({
         await window.capshare.runImport({ taskId, filePath: preview.filePath, resolution })
       )
       setPhase({ state: 'done', result })
-      for (const warning of result.warnings) toast.warning(warning, { duration: 8000 })
+      for (const warning of result.warnings) toast.warning(warning, { timeout: 8000 })
       onImported()
     } catch (error) {
       setPhase({ state: 'preview', preview })
-      toast.error(errorMessage(error))
+      toast.danger(errorMessage(error))
     }
   }
 
@@ -132,7 +120,7 @@ export function ImportView({
 
   const launchCapCut = async (): Promise<void> => {
     const launched = unwrap(await window.capshare.launchCapCut())
-    if (!launched) toast.error('Could not find a CapCut installation to launch.')
+    if (!launched) toast.danger('Could not find a CapCut installation to launch.')
   }
 
   return (
@@ -231,11 +219,11 @@ export function ImportView({
                 <Button
                   variant="secondary"
                   className="rounded-full"
-                  onClick={() => void window.capshare.revealPath(phase.result.folderPath)}
+                  onPress={() => void window.capshare.revealPath(phase.result.folderPath)}
                 >
                   Reveal folder
                 </Button>
-                <Button className="rounded-full" onClick={() => void launchCapCut()}>
+                <Button className="rounded-full" onPress={() => void launchCapCut()}>
                   <Rocket className="size-4" /> Open CapCut
                 </Button>
               </div>
@@ -243,7 +231,7 @@ export function ImportView({
                 variant="ghost"
                 size="sm"
                 className="rounded-full text-muted-foreground"
-                onClick={() => setPhase({ state: 'idle' })}
+                onPress={() => setPhase({ state: 'idle' })}
               >
                 Import another
               </Button>
@@ -252,33 +240,55 @@ export function ImportView({
         </AnimatePresence>
       </div>
 
-      <AlertDialog open={collisionOpen} onOpenChange={setCollisionOpen}>
-        <AlertDialogContent className="glass-strong rounded-3xl border-none">
-          <AlertDialogHeader>
-            <AlertDialogTitle>This project already exists</AlertDialogTitle>
-            <AlertDialogDescription>
-              {phase.state === 'preview' && phase.preview.collision
-                ? `A project named “${phase.preview.collision.existingName}” is already in your CapCut library. What should happen?`
-                : ''}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col gap-2 sm:flex-col">
-            <AlertDialogAction
-              className="w-full rounded-full"
-              onClick={() => phase.state === 'preview' && void runImport(phase.preview, 'copy')}
-            >
-              Import as a copy
-            </AlertDialogAction>
-            <AlertDialogAction
-              className="w-full rounded-full bg-destructive text-white hover:bg-destructive/90"
-              onClick={() => phase.state === 'preview' && void runImport(phase.preview, 'replace')}
-            >
-              Replace existing (backs up the old one)
-            </AlertDialogAction>
-            <AlertDialogCancel className="w-full rounded-full">Cancel</AlertDialogCancel>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <AlertDialog.Backdrop
+        isOpen={collisionOpen}
+        onOpenChange={setCollisionOpen}
+        variant="blur"
+        isDismissable
+        isKeyboardDismissDisabled={false}
+      >
+        <AlertDialog.Container placement="center" size="sm">
+          <AlertDialog.Dialog className="glass-strong rounded-3xl border-none">
+            {({ close }) => (
+              <>
+                <AlertDialog.Header>
+                  <AlertDialog.Icon status="warning" />
+                  <AlertDialog.Heading>This project already exists</AlertDialog.Heading>
+                </AlertDialog.Header>
+                <AlertDialog.Body>
+                  {phase.state === 'preview' && phase.preview.collision
+                    ? `A project named “${phase.preview.collision.existingName}” is already in your CapCut library. What should happen?`
+                    : ''}
+                </AlertDialog.Body>
+                <AlertDialog.Footer className="flex-col gap-2 sm:flex-col">
+                  <Button
+                    className="w-full rounded-full"
+                    onPress={() => {
+                      if (phase.state === 'preview') void runImport(phase.preview, 'copy')
+                      close()
+                    }}
+                  >
+                    Import as a copy
+                  </Button>
+                  <Button
+                    variant="danger"
+                    className="w-full rounded-full"
+                    onPress={() => {
+                      if (phase.state === 'preview') void runImport(phase.preview, 'replace')
+                      close()
+                    }}
+                  >
+                    Replace existing (backs up the old one)
+                  </Button>
+                  <Button slot="close" variant="tertiary" className="w-full rounded-full">
+                    Cancel
+                  </Button>
+                </AlertDialog.Footer>
+              </>
+            )}
+          </AlertDialog.Dialog>
+        </AlertDialog.Container>
+      </AlertDialog.Backdrop>
     </div>
   )
 }
@@ -357,14 +367,18 @@ function PreviewCard({
               <span className="font-medium">Importing…</span>
               <span className="text-muted-foreground tabular-nums">{Math.round(ratio * 100)}%</span>
             </div>
-            <Progress value={ratio * 100} className="h-1.5" />
+            <ProgressBar value={ratio * 100} aria-label="Import progress" className="w-full">
+              <ProgressBar.Track className="h-1.5">
+                <ProgressBar.Fill />
+              </ProgressBar.Track>
+            </ProgressBar>
           </div>
         ) : (
           <div className="flex justify-end gap-2">
-            <Button variant="ghost" className="rounded-full" onClick={onDiscard}>
+            <Button variant="ghost" className="rounded-full" onPress={onDiscard}>
               Cancel
             </Button>
-            <Button className="rounded-full px-5" onClick={onImport}>
+            <Button className="rounded-full px-5" onPress={onImport}>
               Import project
             </Button>
           </div>

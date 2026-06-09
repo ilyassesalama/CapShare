@@ -1,6 +1,5 @@
 @import 'tailwindcss';
-@import 'tw-animate-css';
-@import 'shadcn/tailwind.css';
+@import '@heroui/styles';
 @import '@fontsource-variable/inter';
 
 @custom-variant dark (&:is(.dark *));
@@ -68,6 +67,30 @@
   --glass-border: oklch(1 0 0 / 55%);
   --glass-highlight: oklch(1 0 0 / 85%);
   --glass-shadow: oklch(0.2 0.02 285 / 14%);
+
+  /* ---- HeroUI v3 semantic token bridge ----
+     HeroUI components read their OWN variable names; map them onto the
+     CapShare palette above. Defined once here — the values are var()
+     references, so .dark automatically picks up the dark palette below.
+     --accent (HeroUI's primary action color) and --muted (HeroUI's
+     secondary-text color) are intentionally re-pointed; no surviving
+     component uses bg-accent / bg-muted, so this is safe. */
+  --accent: var(--primary);
+  --accent-foreground: var(--primary-foreground);
+  --default: var(--secondary);
+  --default-foreground: var(--secondary-foreground);
+  --danger: var(--destructive);
+  --danger-foreground: var(--destructive-foreground);
+  --muted: var(--muted-foreground);
+  --surface: var(--card);
+  --surface-foreground: var(--card-foreground);
+  --overlay: var(--popover);
+  --overlay-foreground: var(--popover-foreground);
+  --field-background: var(--input);
+  --field-foreground: var(--foreground);
+  --field-border: var(--border);
+  --separator: var(--border);
+  --focus: var(--ring);
 }
 
 .dark {
@@ -83,10 +106,12 @@
   --primary-foreground: oklch(0.205 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
+  --muted: var(--muted-foreground);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  /* HeroUI bridge (dark): re-point the colliding tokens here too, otherwise this
+     .dark block overrides the :root bridge and HeroUI goes flat-gray in dark. */
+  --accent: var(--primary);
+  --accent-foreground: var(--primary-foreground);
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: oklch(0.985 0.002 247.839);
 
@@ -254,11 +279,40 @@
   }
 }
 
+/* CapShare Liquid Glass material on HeroUI v3 overlay surfaces. --overlay is
+   translucent (mapped to --popover), so we add the blur + hairline + shadow the
+   .glass utilities provide. (Modal/AlertDialog panels get .glass-strong inline.) */
+@layer components {
+  .tooltip,
+  .select__popover,
+  .toast {
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    box-shadow:
+      0 8px 32px var(--glass-shadow),
+      inset 0 1px 0 var(--glass-highlight);
+  }
+
+  /* The global `* { corner-shape: squircle }` distorts switches — force true
+     round corners (circular thumb, stadium track) like a standard iOS toggle. */
+  .switch__control {
+    corner-shape: round;
+  }
+  .switch__thumb {
+    corner-shape: round;
+    border-radius: 9999px;
+  }
+}
+
 /* Accessibility: honor reduced transparency / motion */
 @media (prefers-reduced-transparency: reduce) {
   .glass,
   .glass-strong,
-  .glass-subtle {
+  .glass-subtle,
+  .tooltip,
+  .select__popover,
+  .toast {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
     background: var(--background);

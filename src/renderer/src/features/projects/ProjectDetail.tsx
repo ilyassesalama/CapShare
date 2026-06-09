@@ -1,14 +1,9 @@
 import { useEffect, useState, type JSX } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { CheckCircle2, Clapperboard, FileDown, FolderOpen, X } from 'lucide-react'
-import { toast } from 'sonner'
+import { Button, Label, Modal, ProgressBar, Switch, toast } from '@heroui/react'
 import type { DraftSummary, ExportResult } from '@shared/types'
 import { MiniTimeline } from '@/components/MiniTimeline'
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import { Label } from '@/components/ui/label'
-import { Progress } from '@/components/ui/progress'
-import { Switch } from '@/components/ui/switch'
 import { formatBytes, formatDuration, newTaskId } from '@/lib/format'
 import { errorMessage, unwrap } from '@/lib/ipc'
 
@@ -71,7 +66,7 @@ function DetailDialog({ project, open, onClose }: ProjectDetailProps): JSX.Eleme
       toast.success(`Exported "${project.name}"`)
     } catch (error) {
       setPhase({ state: 'idle' })
-      toast.error(errorMessage(error))
+      toast.danger(errorMessage(error))
     }
   }
 
@@ -89,163 +84,182 @@ function DetailDialog({ project, open, onClose }: ProjectDetailProps): JSX.Eleme
   const exporting = phase.state === 'running'
 
   return (
-    <Dialog
-      open={open && project !== null}
+    <Modal.Backdrop
+      isOpen={open && project !== null}
       onOpenChange={(nextOpen) => !nextOpen && !exporting && onClose()}
+      variant="blur"
+      isDismissable={!exporting}
+      isKeyboardDismissDisabled={exporting}
     >
-      <DialogContent
-        showCloseButton={false}
-        className="glass-strong max-w-2xl gap-0 overflow-hidden rounded-3xl border-none bg-white! p-0 dark:bg-[var(--glass-bg-strong)]!"
-      >
-        {project && (
-          <>
-            <div className="relative h-56 w-full overflow-hidden bg-foreground/4">
-              {project.coverDataUrl ? (
-                <img src={project.coverDataUrl} alt="" className="size-full object-cover" />
-              ) : (
-                <div className="flex size-full items-center justify-center text-muted-foreground/40">
-                  <Clapperboard className="size-14" strokeWidth={1.2} />
-                </div>
-              )}
-              <div className="absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-black/60 to-transparent" />
-              <DialogTitle className="absolute bottom-3 left-5 text-xl font-bold text-white drop-shadow">
-                {project.name}
-              </DialogTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => !exporting && onClose()}
-                aria-label="Close"
-                className="absolute top-3 right-3 size-7 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/55 hover:text-white"
-              >
-                <X className="size-4" />
-              </Button>
-            </div>
-
-            <div className="flex flex-col gap-5 p-5">
-              <div className="flex flex-wrap gap-2">
-                <StatChip label="Duration" value={formatDuration(project.durationUs)} />
-                {project.canvas && (
-                  <StatChip
-                    label="Canvas"
-                    value={`${project.canvas.width}×${project.canvas.height}`}
-                  />
+      <Modal.Container placement="center" size="lg">
+        <Modal.Dialog
+          aria-label={project?.name ?? 'Project details'}
+          className="glass-strong w-full max-w-lg gap-0 overflow-hidden rounded-3xl border-none bg-white! p-0 dark:bg-[var(--glass-bg-strong)]!"
+        >
+          {project && (
+            <>
+              <div className="relative h-56 w-full overflow-hidden bg-foreground/4">
+                {project.coverDataUrl ? (
+                  <img src={project.coverDataUrl} alt="" className="size-full object-cover" />
+                ) : (
+                  <div className="flex size-full items-center justify-center text-muted-foreground/40">
+                    <Clapperboard className="size-14" strokeWidth={1.2} />
+                  </div>
                 )}
-                {project.fps && <StatChip label="FPS" value={String(Math.round(project.fps))} />}
-                <StatChip
-                  label="Media"
-                  value={String(
-                    project.mediaCounts.video +
-                      project.mediaCounts.audio +
-                      project.mediaCounts.image
-                  )}
-                />
-                <StatChip label="Size" value={formatBytes(project.sizeBytes)} />
-                {project.capcutVersion && <StatChip label="CapCut" value={project.capcutVersion} />}
+                <div className="absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-black/60 to-transparent" />
+                <h2 className="absolute bottom-3 left-5 text-xl font-bold text-white drop-shadow">
+                  {project.name}
+                </h2>
+                <Button
+                  variant="ghost"
+                  isIconOnly
+                  onPress={() => !exporting && onClose()}
+                  aria-label="Close"
+                  className="absolute top-3 right-3 size-7 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/55 hover:text-white"
+                >
+                  <X className="size-4" />
+                </Button>
               </div>
 
-              <MiniTimeline tracks={project.tracks} durationUs={project.durationUs} />
+              <div className="flex flex-col gap-5 p-5">
+                <div className="flex flex-wrap gap-2">
+                  <StatChip label="Duration" value={formatDuration(project.durationUs)} />
+                  {project.canvas && (
+                    <StatChip
+                      label="Canvas"
+                      value={`${project.canvas.width}×${project.canvas.height}`}
+                    />
+                  )}
+                  {project.fps && <StatChip label="FPS" value={String(Math.round(project.fps))} />}
+                  <StatChip
+                    label="Media"
+                    value={String(
+                      project.mediaCounts.video +
+                        project.mediaCounts.audio +
+                        project.mediaCounts.image
+                    )}
+                  />
+                  <StatChip label="Size" value={formatBytes(project.sizeBytes)} />
+                  {project.capcutVersion && (
+                    <StatChip label="CapCut" value={project.capcutVersion} />
+                  )}
+                </div>
 
-              <AnimatePresence mode="wait" initial={false}>
-                {phase.state === 'done' ? (
-                  <motion.div
-                    key="done"
-                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ type: 'spring', stiffness: 420, damping: 30 }}
-                    className="glass-subtle flex items-center justify-between rounded-2xl p-4"
-                  >
-                    <div className="flex items-center gap-3">
-                      <motion.span
-                        initial={{ scale: 0.4, rotate: -30 }}
-                        animate={{ scale: 1, rotate: 0 }}
-                        transition={{ type: 'spring', stiffness: 380, damping: 18, delay: 0.08 }}
+                <MiniTimeline tracks={project.tracks} durationUs={project.durationUs} />
+
+                <AnimatePresence mode="wait" initial={false}>
+                  {phase.state === 'done' ? (
+                    <motion.div
+                      key="done"
+                      initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+                      className="glass-subtle flex items-center justify-between rounded-2xl p-4"
+                    >
+                      <div className="flex items-center gap-3">
+                        <motion.span
+                          initial={{ scale: 0.4, rotate: -30 }}
+                          animate={{ scale: 1, rotate: 0 }}
+                          transition={{
+                            type: 'spring',
+                            stiffness: 380,
+                            damping: 18,
+                            delay: 0.08
+                          }}
+                        >
+                          <CheckCircle2 className="size-5 text-emerald-500" />
+                        </motion.span>
+                        <div>
+                          <div className="text-[13px] font-semibold">Export complete</div>
+                          <div className="text-[11.5px] text-muted-foreground">
+                            {formatBytes(phase.result.sizeBytes)} · {phase.result.fileCount} files
+                          </div>
+                        </div>
+                      </div>
+                      <Button
+                        variant="secondary"
+                        className="rounded-full"
+                        onPress={() => reveal(phase.result.capsharePath)}
                       >
-                        <CheckCircle2 className="size-5 text-emerald-500" />
-                      </motion.span>
-                      <div>
-                        <div className="text-[13px] font-semibold">Export complete</div>
-                        <div className="text-[11.5px] text-muted-foreground">
-                          {formatBytes(phase.result.sizeBytes)} · {phase.result.fileCount} files
+                        <FolderOpen className="size-4" /> Reveal file
+                      </Button>
+                    </motion.div>
+                  ) : exporting ? (
+                    <motion.div
+                      key="running"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+                      className="glass-subtle flex flex-col gap-3 rounded-2xl p-4"
+                    >
+                      <div className="flex items-center justify-between text-[12.5px]">
+                        <span className="font-medium">Exporting…</span>
+                        <span className="text-muted-foreground tabular-nums">
+                          {Math.round(phase.ratio * 100)}%
+                        </span>
+                      </div>
+                      <ProgressBar
+                        value={phase.ratio * 100}
+                        aria-label="Export progress"
+                        className="w-full"
+                      >
+                        <ProgressBar.Track className="h-1.5">
+                          <ProgressBar.Fill />
+                        </ProgressBar.Track>
+                      </ProgressBar>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="self-end rounded-full text-muted-foreground"
+                        onPress={cancelExport}
+                      >
+                        Cancel
+                      </Button>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="idle"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+                      className="flex flex-col gap-4"
+                    >
+                      <div className="glass-subtle rounded-2xl px-4">
+                        <div className="flex items-center justify-between gap-6 py-3.5">
+                          <div className="min-w-0">
+                            <Label className="text-[13px] font-medium">Include AI caches</Label>
+                            <p className="mt-0.5 text-[11.5px] text-muted-foreground">
+                              Bigger file; skips re-analysis on the other machine
+                            </p>
+                          </div>
+                          <div className="flex shrink-0 items-center">
+                            <Switch
+                              aria-label="Include AI caches"
+                              isSelected={includeCaches}
+                              onChange={setIncludeCaches}
+                            >
+                              <Switch.Control>
+                                <Switch.Thumb />
+                              </Switch.Control>
+                            </Switch>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <Button
-                      variant="secondary"
-                      className="rounded-full"
-                      onClick={() => reveal(phase.result.capsharePath)}
-                    >
-                      <FolderOpen className="size-4" /> Reveal file
-                    </Button>
-                  </motion.div>
-                ) : exporting ? (
-                  <motion.div
-                    key="running"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ type: 'spring', stiffness: 420, damping: 30 }}
-                    className="glass-subtle flex flex-col gap-3 rounded-2xl p-4"
-                  >
-                    <div className="flex items-center justify-between text-[12.5px]">
-                      <span className="font-medium">Exporting…</span>
-                      <span className="text-muted-foreground tabular-nums">
-                        {Math.round(phase.ratio * 100)}%
-                      </span>
-                    </div>
-                    <Progress value={phase.ratio * 100} className="h-1.5" />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="self-end rounded-full text-muted-foreground"
-                      onClick={cancelExport}
-                    >
-                      Cancel
-                    </Button>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="idle"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ type: 'spring', stiffness: 420, damping: 30 }}
-                    className="flex flex-col gap-4"
-                  >
-                    <div className="glass-subtle rounded-2xl px-4">
-                      <div className="flex items-center justify-between gap-6 py-3.5">
-                        <div className="min-w-0">
-                          <Label
-                            htmlFor="include-caches"
-                            className="cursor-pointer text-[13px] font-medium"
-                          >
-                            Include AI caches
-                          </Label>
-                          <p className="mt-0.5 text-[11.5px] text-muted-foreground">
-                            Bigger file; skips re-analysis on the other machine
-                          </p>
-                        </div>
-                        <div className="flex shrink-0 items-center">
-                          <Switch
-                            id="include-caches"
-                            checked={includeCaches}
-                            onCheckedChange={setIncludeCaches}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <Button onClick={() => void startExport()} className="mt-2 w-full rounded-xl">
-                      <FileDown className="size-4" /> Export .capshare
-                    </Button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
+                      <Button onPress={() => void startExport()} className="mt-2 w-full rounded-xl">
+                        <FileDown className="size-4" /> Export .capshare
+                      </Button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </>
+          )}
+        </Modal.Dialog>
+      </Modal.Container>
+    </Modal.Backdrop>
   )
 }
 

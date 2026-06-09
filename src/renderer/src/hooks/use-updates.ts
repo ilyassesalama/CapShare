@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { toast } from 'sonner'
+import { toast } from '@heroui/react'
 import type { UpdateStatus } from '@shared/types'
 
 export interface UpdatesController {
@@ -37,8 +37,8 @@ export function useUpdates(): UpdatesController {
     notifiedFor.current = status.version
     toast.success(`Update ${status.version} ready`, {
       description: 'Restart CapShare to install it.',
-      duration: Infinity,
-      action: { label: 'Restart', onClick: () => void window.capshare.installUpdate() }
+      timeout: 0,
+      actionProps: { children: 'Restart', onPress: () => void window.capshare.installUpdate() }
     })
   }, [status])
 

@@ -1,7 +1,7 @@
 import type { JSX } from 'react'
 import { motion } from 'motion/react'
+import { Tooltip } from '@heroui/react'
 import type { TrackSummary, TrackType } from '@shared/types'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatDuration } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
@@ -48,38 +48,42 @@ export function MiniTimeline({ tracks, durationUs }: MiniTimelineProps): JSX.Ele
               const left = (segment.startUs / durationUs) * 100
               const width = Math.max((segment.durationUs / durationUs) * 100, 0.75)
               return (
-                <Tooltip key={segmentIndex}>
-                  <TooltipTrigger
-                    render={
-                      <motion.div
-                        initial={{ scaleX: 0, opacity: 0 }}
-                        animate={{ scaleX: 1, opacity: 0.9 }}
-                        whileHover={{ opacity: 1 }}
-                        transition={{
-                          type: 'spring',
-                          stiffness: 380,
-                          damping: 32,
-                          delay: trackIndex * 0.06 + segmentIndex * 0.025
-                        }}
-                        className={cn(
-                          'absolute top-0.5 bottom-0.5 origin-left rounded-[6px]',
-                          TRACK_COLORS[track.type]
-                        )}
-                        style={{
-                          left: `calc(${left}% + 0.5px)`,
-                          width: `max(calc(${width}% - 1.5px), 3px)`
-                        }}
-                      />
-                    }
-                  />
-                  <TooltipContent side="top" className="max-w-60 flex-col items-start gap-0.5">
+                <Tooltip key={segmentIndex} delay={250}>
+                  <Tooltip.Trigger
+                    aria-label={segment.label ?? TRACK_LABELS[track.type]}
+                    className="absolute top-0.5 bottom-0.5"
+                    style={{
+                      left: `calc(${left}% + 0.5px)`,
+                      width: `max(calc(${width}% - 1.5px), 3px)`
+                    }}
+                  >
+                    <motion.div
+                      initial={{ scaleX: 0, opacity: 0 }}
+                      animate={{ scaleX: 1, opacity: 0.9 }}
+                      whileHover={{ opacity: 1 }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 380,
+                        damping: 32,
+                        delay: trackIndex * 0.06 + segmentIndex * 0.025
+                      }}
+                      className={cn(
+                        'h-full w-full origin-left rounded-[6px]',
+                        TRACK_COLORS[track.type]
+                      )}
+                    />
+                  </Tooltip.Trigger>
+                  <Tooltip.Content
+                    placement="top"
+                    className="flex max-w-60 flex-col items-start gap-0.5"
+                  >
                     <div className="text-xs wrap-break-word">
                       {segment.label ?? TRACK_LABELS[track.type]}
                     </div>
                     <div className="text-[10px] opacity-60">
                       {formatDuration(segment.startUs)} · {formatDuration(segment.durationUs)} long
                     </div>
-                  </TooltipContent>
+                  </Tooltip.Content>
                 </Tooltip>
               )
             })}

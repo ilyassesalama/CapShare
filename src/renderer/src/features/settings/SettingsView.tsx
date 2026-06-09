@@ -1,18 +1,8 @@
 import type { JSX, ReactNode } from 'react'
 import { FolderOpen, RefreshCw, RotateCcw } from 'lucide-react'
-import { toast } from 'sonner'
+import { Button, Label, ListBox, Select, Switch, toast } from '@heroui/react'
 import type { AppSettings, UpdateStatus } from '@shared/types'
 import type { UpdatesController } from '@/hooks/use-updates'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
 import { errorMessage, unwrap } from '@/lib/ipc'
 
 const THEME_OPTIONS: { value: AppSettings['theme']; label: string }[] = [
@@ -58,7 +48,7 @@ export function SettingsView({ settings, onChange, updates }: SettingsViewProps)
       const folder = unwrap(await window.capshare.pickFolder(title))
       if (folder) onChange({ [key]: folder })
     } catch (error) {
-      toast.error(errorMessage(error))
+      toast.danger(errorMessage(error))
     }
   }
 
@@ -79,10 +69,10 @@ export function SettingsView({ settings, onChange, updates }: SettingsViewProps)
               {settings.draftRootOverride && (
                 <Button
                   variant="ghost"
-                  size="icon"
+                  isIconOnly
                   className="rounded-full"
                   aria-label="Reset to automatic detection"
-                  onClick={() => onChange({ draftRootOverride: null })}
+                  onPress={() => onChange({ draftRootOverride: null })}
                 >
                   <RotateCcw className="size-4" />
                 </Button>
@@ -90,7 +80,7 @@ export function SettingsView({ settings, onChange, updates }: SettingsViewProps)
               <Button
                 variant="secondary"
                 className="rounded-full border border-input"
-                onClick={() =>
+                onPress={() =>
                   void pickFolder('Choose the com.lveditor.draft folder', 'draftRootOverride')
                 }
               >
@@ -107,10 +97,10 @@ export function SettingsView({ settings, onChange, updates }: SettingsViewProps)
               {settings.defaultExportDir && (
                 <Button
                   variant="ghost"
-                  size="icon"
+                  isIconOnly
                   className="rounded-full"
                   aria-label="Reset export location"
-                  onClick={() => onChange({ defaultExportDir: null })}
+                  onPress={() => onChange({ defaultExportDir: null })}
                 >
                   <RotateCcw className="size-4" />
                 </Button>
@@ -118,7 +108,7 @@ export function SettingsView({ settings, onChange, updates }: SettingsViewProps)
               <Button
                 variant="secondary"
                 className="rounded-full border border-input"
-                onClick={() => void pickFolder('Choose export folder', 'defaultExportDir')}
+                onPress={() => void pickFolder('Choose export folder', 'defaultExportDir')}
               >
                 <FolderOpen className="size-4" /> Choose…
               </Button>
@@ -132,29 +122,39 @@ export function SettingsView({ settings, onChange, updates }: SettingsViewProps)
             help="Larger .capshare files; skips re-analysis after import"
           >
             <Switch
-              checked={settings.includeCachesByDefault}
-              onCheckedChange={(checked) => onChange({ includeCachesByDefault: checked })}
-            />
+              aria-label="Include AI caches by default"
+              isSelected={settings.includeCachesByDefault}
+              onChange={(checked) => onChange({ includeCachesByDefault: checked })}
+            >
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+            </Switch>
           </SettingRow>
         </SettingsGroup>
 
         <SettingsGroup title="Appearance">
           <SettingRow label="Theme" help="Liquid glass follows your system by default">
             <Select
-              items={THEME_OPTIONS}
+              aria-label="Theme"
+              className="w-32"
               value={settings.theme}
-              onValueChange={(theme) => onChange({ theme: theme as AppSettings['theme'] })}
+              onChange={(theme) => onChange({ theme: theme as AppSettings['theme'] })}
             >
-              <SelectTrigger className="w-32 rounded-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {THEME_OPTIONS.map(({ value, label }) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
+              <Select.Trigger className="rounded-full">
+                <Select.Value />
+                <Select.Indicator />
+              </Select.Trigger>
+              <Select.Popover>
+                <ListBox>
+                  {THEME_OPTIONS.map(({ value, label }) => (
+                    <ListBox.Item key={value} id={value} textValue={label}>
+                      {label}
+                      <ListBox.ItemIndicator />
+                    </ListBox.Item>
+                  ))}
+                </ListBox>
+              </Select.Popover>
             </Select>
           </SettingRow>
         </SettingsGroup>
@@ -162,15 +162,15 @@ export function SettingsView({ settings, onChange, updates }: SettingsViewProps)
         <SettingsGroup title="About">
           <SettingRow label="Version" help={updateHelp(updates.status, updates.version)}>
             {updates.status.state === 'downloaded' ? (
-              <Button className="rounded-full" onClick={updates.install}>
+              <Button className="rounded-full" onPress={updates.install}>
                 <RotateCcw className="size-4" /> Restart to update
               </Button>
             ) : (
               <Button
                 variant="secondary"
                 className="rounded-full border border-input"
-                disabled={updates.busy}
-                onClick={updates.check}
+                isDisabled={updates.busy}
+                onPress={updates.check}
               >
                 <RefreshCw className={`size-4 ${updates.busy ? 'animate-spin' : ''}`} />
                 Check for updates

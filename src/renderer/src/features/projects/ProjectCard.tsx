@@ -19,13 +19,13 @@ export function ProjectCard({ project, index, onOpen }: ProjectCardProps): JSX.E
       onClick={() => onOpen(project)}
       className="glass group flex flex-col overflow-hidden rounded-2xl text-left shadow-sm outline-2 outline-transparent transition-[outline-color] hover:outline-primary/60"
     >
-      <div className="relative aspect-video w-full overflow-hidden rounded-t-2xl bg-foreground/4 will-change-transform">
+      <div className="relative aspect-video w-full overflow-hidden rounded-t-2xl bg-foreground/4">
         {project.coverDataUrl ? (
           <img
             src={project.coverDataUrl}
             alt=""
             draggable={false}
-            className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+            className="size-full object-cover"
           />
         ) : (
           <div className="flex size-full items-center justify-center text-muted-foreground/40">
