@@ -1,6 +1,6 @@
 {
   "name": "capshare",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Share CapCut projects across machines — export and import portable .capshare files on macOS and Windows",
   "main": "./out/main/index.js",
   "author": "Ilyasse Salama",

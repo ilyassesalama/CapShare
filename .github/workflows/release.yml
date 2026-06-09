@@ -14,8 +14,39 @@ permissions:
   contents: write
 
 jobs:
+  # Runs once before the build matrix: guards against a tag/version mismatch
+  # (electron-builder publishes to a release named after package.json's version,
+  # not the git tag) and pre-creates the release so the parallel macOS/Windows
+  # jobs upload into one release instead of racing to create duplicate drafts.
+  prepare:
+    name: Verify & ensure release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.tag }}
+
+      - name: Verify tag matches package.json version
+        env:
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          VERSION="v$(node -p "require('./package.json').version")"
+          if [ "$TAG" != "$VERSION" ]; then
+            echo "::error::Tag $TAG does not match package.json version $VERSION. Bump the version in package.json and re-tag."
+            exit 1
+          fi
+
+      - name: Ensure GitHub release exists
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
+            || gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --draft --title "$TAG" --generate-notes
+
   release:
     name: Build & publish (${{ matrix.os }})
+    needs: prepare
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
