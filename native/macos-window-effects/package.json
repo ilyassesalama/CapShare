@@ -1,0 +1,15 @@
+{
+  "name": "macos-window-effects",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Native NSWindow corner rounding for CapShare. Lets the window keep real under-window vibrancy while drawing macOS-26-sized continuous corners (stock Electron links the pre-Tahoe SDK and exposes no corner-radius API).",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "os": [
+    "darwin"
+  ],
+  "gypfile": true,
+  "dependencies": {
+    "node-addon-api": "^8.4.0"
+  }
+}

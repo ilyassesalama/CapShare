@@ -9,7 +9,6 @@ import { ProjectsView } from '@/features/projects/ProjectsView'
 import { SettingsView } from '@/features/settings/SettingsView'
 import { useUpdates } from '@/hooks/use-updates'
 import { errorMessage, unwrap } from '@/lib/ipc'
-
 function useTheme(theme: AppSettings['theme'] | undefined): void {
   useEffect(() => {
     const root = document.documentElement
@@ -102,42 +101,40 @@ function App(): JSX.Element {
       <Wallpaper />
       <div className="flex h-full">
         <Sidebar view={view} onNavigate={setView} />
-        <main className="min-w-0 flex-1 py-3 pr-3">
-          <div className="glass relative h-full overflow-hidden rounded-3xl">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={view}
-                className="h-full"
-                initial={{ opacity: 0, y: 8, scale: 0.995, filter: 'blur(10px)' }}
-                animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-                exit={{ opacity: 0, y: -6, scale: 0.995, filter: 'blur(8px)' }}
-                transition={{ type: 'spring', stiffness: 650, damping: 42, mass: 0.8 }}
-              >
-                {view === 'projects' && (
-                  <ProjectsView
-                    projects={projects}
-                    loading={loadingProjects}
-                    onRefresh={() => void refreshProjects()}
-                    onPickDraftRoot={() => void pickDraftRoot()}
-                  />
-                )}
-                {view === 'import' && (
-                  <ImportView
-                    externalFile={externalFile}
-                    onExternalFileConsumed={() => setExternalFile(null)}
-                    onImported={() => void refreshProjects()}
-                  />
-                )}
-                {view === 'settings' && (
-                  <SettingsView
-                    settings={settings}
-                    onChange={(u) => void updateSettings(u)}
-                    updates={updates}
-                  />
-                )}
-              </motion.div>
-            </AnimatePresence>
-          </div>
+        <main className="relative min-w-0 flex-1 overflow-hidden">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={view}
+              className="h-full"
+              initial={{ opacity: 0, y: 8, scale: 0.995, filter: 'blur(10px)' }}
+              animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, y: -6, scale: 0.995, filter: 'blur(8px)' }}
+              transition={{ type: 'spring', stiffness: 650, damping: 42, mass: 0.8 }}
+            >
+              {view === 'projects' && (
+                <ProjectsView
+                  projects={projects}
+                  loading={loadingProjects}
+                  onRefresh={() => void refreshProjects()}
+                  onPickDraftRoot={() => void pickDraftRoot()}
+                />
+              )}
+              {view === 'import' && (
+                <ImportView
+                  externalFile={externalFile}
+                  onExternalFileConsumed={() => setExternalFile(null)}
+                  onImported={() => void refreshProjects()}
+                />
+              )}
+              {view === 'settings' && (
+                <SettingsView
+                  settings={settings}
+                  onChange={(u) => void updateSettings(u)}
+                  updates={updates}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
         </main>
       </div>
       <Toast.Provider placement="bottom end" />

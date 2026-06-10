@@ -52,6 +52,26 @@ export function createMainWindow(): BrowserWindow {
     }
   })
 
+  // Tahoe-sized corners with vibrancy intact: Electron's pre-Tahoe SDK caps
+  // the native radius at ~10px with no API to change it (electron#47514).
+  if (isMac) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { setCornerRadius } = require('macos-window-effects') as {
+        setCornerRadius: (handle: Buffer, radius: number) => boolean
+      }
+      const TAHOE_CORNER_RADIUS = 34
+      const round = (radius: number): void => {
+        setCornerRadius(mainWindow.getNativeWindowHandle(), radius)
+      }
+      round(TAHOE_CORNER_RADIUS)
+      mainWindow.on('enter-full-screen', () => round(0))
+      mainWindow.on('leave-full-screen', () => round(TAHOE_CORNER_RADIUS))
+    } catch {
+      /* stock corners */
+    }
+  }
+
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
   })

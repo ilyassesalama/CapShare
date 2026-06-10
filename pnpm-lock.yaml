@@ -132,6 +132,10 @@ importers:
       vitest:
         specifier: ^3.2.6
         version: 3.2.6(@types/debug@4.1.13)(@types/node@22.19.20)(jiti@2.7.0)(lightningcss@1.32.0)(msw@2.14.6(@types/node@22.19.20)(typescript@5.9.3))
+    optionalDependencies:
+      macos-window-effects:
+        specifier: file:native/macos-window-effects
+        version: file:native/macos-window-effects
 
 packages:
 
@@ -2584,6 +2588,10 @@ packages:
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
+  macos-window-effects@file:native/macos-window-effects:
+    resolution: {directory: native/macos-window-effects, type: directory}
+    os: [darwin]
+
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
@@ -2697,6 +2705,10 @@ packages:
 
   node-addon-api@1.7.2:
     resolution: {integrity: sha512-ibPK3iA+vaY1eEjESkQkM0BbCqFOaZMiXRTtdB0u7b4djtY6JnsjvPdUHVMg6xQt3B8fpTTWHI9A+ADjM9frzg==}
+
+  node-addon-api@8.8.0:
+    resolution: {integrity: sha512-c5Ko1fZJIJmzhFIkhRN76WTq+fC6tWnGy9CXA0fA+XygsWZmEwG8vmbkNqxMyoaa0Tin4djul49NzdVcJJcjeA==}
+    engines: {node: ^18 || ^20 || >= 21}
 
   node-api-version@0.2.1:
     resolution: {integrity: sha512-2xP/IGGMmmSQpI1+O/k72jF/ykvZ89JeuKX3TLJAYPDVLUalrshrLHkeVcCCZqG/eEa635cr8IBYzgnDvM2O8Q==}
@@ -6269,6 +6281,11 @@ snapshots:
     dependencies:
       react: 19.2.7
 
+  macos-window-effects@file:native/macos-window-effects:
+    dependencies:
+      node-addon-api: 8.8.0
+    optional: true
+
   magic-string@0.30.21:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
@@ -6374,6 +6391,9 @@ snapshots:
       semver: 7.8.2
 
   node-addon-api@1.7.2:
+    optional: true
+
+  node-addon-api@8.8.0:
     optional: true
 
   node-api-version@0.2.1:

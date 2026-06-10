@@ -14,7 +14,8 @@
  * ------------------------------------------------------------------------- */
 
 :root {
-  --radius: 0.875rem;
+  /* rounded-3xl (×2.2 ≈ 35px) must track the 34px window corners (window.ts) */
+  --radius: 1rem;
 
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -271,6 +272,14 @@
     border: 1px solid var(--border);
   }
 
+  /* Nests inside the 34px window corner across an 8px gutter; must use the
+     window's Apple curve, not the global squircle (which cuts in deeper). */
+  .rounded-window-concentric {
+    border-radius: 26px;
+    corner-shape: round;
+    -electron-corner-smoothing: system-ui;
+  }
+
   /* Window drag regions for the frameless window */
   .app-drag {
     -webkit-app-region: drag;
@@ -318,13 +327,12 @@
   }
 }
 :is(.modal__backdrop--blur, .alert-dialog__backdrop--blur, .drawer__backdrop--blur):is(
-    [data-entering='true'],
-    [data-exiting='true']
-  ) {
+  [data-entering='true'],
+  [data-exiting='true']
+) {
   animation-name: capshare-hold !important;
 }
-:is(.modal__backdrop--blur, .alert-dialog__backdrop--blur, .drawer__backdrop--blur)
-  .glass-strong {
+:is(.modal__backdrop--blur, .alert-dialog__backdrop--blur, .drawer__backdrop--blur) .glass-strong {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
