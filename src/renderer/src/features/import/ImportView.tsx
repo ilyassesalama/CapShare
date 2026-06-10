@@ -1,19 +1,21 @@
 import { useCallback, useEffect, useState, type DragEvent, type JSX } from 'react'
 import {
   AlertTriangle,
-  Apple,
-  AppWindow,
   CheckCircle2,
   Clapperboard,
   FileDown,
   FileUp,
   FolderOpen,
   Loader2,
-  Rocket
+  Rocket,
+  Sparkles,
+  X
 } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { AlertDialog, Button, ProgressBar, toast } from '@heroui/react'
 import type { CollisionResolution, ImportPreview, ImportResult } from '@shared/types'
+import { FaApple, FaWindows } from 'react-icons/fa6'
+import { AnimatedHeight } from '@/components/AnimatedHeight'
 import { kinematicScale } from '@/lib/dialog-anim'
 import { formatBytes, formatDate, formatDuration, newTaskId } from '@/lib/format'
 import { errorMessage, unwrap } from '@/lib/ipc'
@@ -347,37 +349,46 @@ function PreviewCard({
   onImport: () => void
   onDiscard: () => void
 }): JSX.Element {
-  const SourceIcon = preview.compat.sourceOs === 'mac' ? Apple : AppWindow
+  const SourceIcon = preview.compat.sourceOs === 'mac' ? FaApple : FaWindows
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8, scale: 0.98 }}
       transition={{ type: 'spring', stiffness: 320, damping: 26 }}
-      className="glass-strong my-auto w-full max-w-md overflow-hidden rounded-3xl"
+      className="glass-strong my-auto w-full max-w-lg overflow-hidden rounded-3xl"
     >
-      <div className="relative aspect-video w-full overflow-hidden bg-foreground/4">
+      <div className="relative h-52 w-full overflow-hidden bg-foreground/4">
         {preview.coverDataUrl ? (
           <img src={preview.coverDataUrl} alt="" className="size-full object-cover" />
         ) : (
-          <div className="flex size-full items-center justify-center text-muted-foreground/30">
+          <div className="flex size-full items-center justify-center text-muted-foreground/40">
             <Clapperboard className="size-14" strokeWidth={1.2} />
           </div>
         )}
-        <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/10 to-transparent" />
-        <span className="absolute top-3 left-3 flex items-center gap-1.5 rounded-full bg-black/45 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-md">
-          <SourceIcon className="size-3.5" />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-black/60 to-transparent" />
+        <span className="absolute top-3 left-3 flex items-center gap-1.5 rounded-full bg-black/40 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm">
+          {/* The Apple glyph is optically bottom-heavy (all mass below the
+              leaf), so geometric centering makes it look sunken — nudge up. */}
+          <SourceIcon
+            className={cn('size-3.5', preview.compat.sourceOs === 'mac' && '-translate-y-px')}
+          />
           {preview.compat.sourceOs === 'mac' ? 'macOS' : 'Windows'}
-          {preview.compat.sourceCapcutVersion && ` · ${preview.compat.sourceCapcutVersion}`}
+          {preview.compat.sourceCapcutVersion && ` · CapCut ${preview.compat.sourceCapcutVersion}`}
         </span>
-        <div className="absolute inset-x-0 bottom-0 p-4">
-          <div className="text-[11px] font-semibold tracking-wide text-white/70 uppercase">
-            Ready to import
-          </div>
-          <div className="truncate text-lg font-bold text-white drop-shadow">
-            {preview.draftName}
-          </div>
-        </div>
+        <h2 className="absolute bottom-3 left-5 max-w-[80%] truncate text-xl font-bold text-white drop-shadow">
+          {preview.draftName}
+        </h2>
+        <Button
+          variant="ghost"
+          isIconOnly
+          isDisabled={running}
+          onPress={onDiscard}
+          aria-label="Discard import"
+          className="absolute top-3 right-3 size-7 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/55 hover:text-white"
+        >
+          <X className="size-4" />
+        </Button>
       </div>
 
       <div className="flex flex-col gap-4 p-5">
@@ -386,13 +397,25 @@ function PreviewCard({
           {preview.canvas && (
             <Stat label="Canvas" value={`${preview.canvas.width}×${preview.canvas.height}`} />
           )}
+          {preview.fps && <Stat label="FPS" value={String(Math.round(preview.fps))} />}
           <Stat label="Media" value={String(preview.mediaCount)} />
           <Stat label="Size" value={formatBytes(preview.totalBytes)} />
           <Stat label="Exported" value={formatDate(Date.parse(preview.exportedAt) || null)} />
+          {preview.includesCaches && <Stat label="AI caches" value="Included" />}
         </div>
 
-        {preview.compat.warnings.length > 0 && (
-          <div className="flex flex-col gap-1.5 rounded-2xl bg-amber-500/10 p-3">
+        {(preview.collision || preview.compat.warnings.length > 0) && (
+          <div className="flex flex-col gap-2 rounded-2xl bg-amber-500/10 p-3.5">
+            {preview.collision && (
+              <div className="flex gap-2 text-[11.5px] leading-snug text-amber-700 dark:text-amber-400">
+                <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
+                <span>
+                  <span className="font-semibold">Already in your library.</span> A project named “
+                  {preview.collision.existingName}” exists — you&apos;ll choose whether to replace
+                  it or import a copy.
+                </span>
+              </div>
+            )}
             {preview.compat.warnings.map((warning, i) => (
               <div
                 key={i}
@@ -405,28 +428,47 @@ function PreviewCard({
           </div>
         )}
 
-        {running ? (
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between text-[12.5px]">
-              <span className="font-medium">Importing…</span>
-              <span className="text-muted-foreground tabular-nums">{Math.round(ratio * 100)}%</span>
-            </div>
-            <ProgressBar value={ratio * 100} aria-label="Import progress" className="w-full">
-              <ProgressBar.Track className="h-1.5">
-                <ProgressBar.Fill />
-              </ProgressBar.Track>
-            </ProgressBar>
-          </div>
-        ) : (
-          <div className="flex gap-2 mt-4">
-            <Button variant="ghost" className="flex-1 rounded-full" onPress={onDiscard}>
-              Cancel
-            </Button>
-            <Button className="flex-1 rounded-full" onPress={onImport}>
-              <FileUp className="size-4" /> Import project
-            </Button>
-          </div>
-        )}
+        <AnimatedHeight>
+          <AnimatePresence mode="popLayout" initial={false}>
+            {running ? (
+              <motion.div
+                key="running"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+                className="glass-subtle flex flex-col gap-3 rounded-2xl p-4"
+              >
+                <div className="flex items-center justify-between text-[12.5px]">
+                  <span className="flex items-center gap-2 font-medium">
+                    <Sparkles className="size-3.5 text-primary" />
+                    Importing into CapCut…
+                  </span>
+                  <span className="text-muted-foreground tabular-nums">
+                    {Math.round(ratio * 100)}%
+                  </span>
+                </div>
+                <ProgressBar value={ratio * 100} aria-label="Import progress" className="w-full">
+                  <ProgressBar.Track className="h-1.5">
+                    <ProgressBar.Fill />
+                  </ProgressBar.Track>
+                </ProgressBar>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="idle"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+              >
+                <Button className="w-full rounded-xl" onPress={onImport}>
+                  <FileDown className="size-4" /> Import project
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </AnimatedHeight>
       </div>
     </motion.div>
   )
