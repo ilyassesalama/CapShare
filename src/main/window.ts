@@ -15,8 +15,8 @@ const isWindows = process.platform === 'win32'
  */
 export function createMainWindow(): BrowserWindow {
   const mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 820,
+    width: 1080,
+    height: 750,
     minWidth: 1000,
     minHeight: 660,
     show: false,

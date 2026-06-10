@@ -129,15 +129,8 @@ export function ImportView({
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <header className="app-drag px-6 pt-5 pb-3">
-        <h1 className="text-xl font-bold tracking-tight">Import</h1>
-        <p className="text-[12px] text-muted-foreground">
-          Bring a .capshare project into this machine&apos;s CapCut
-        </p>
-      </header>
-
-      <div className="flex min-h-0 flex-1 items-stretch justify-center overflow-y-auto px-6 pb-6">
+    <div className="relative h-full">
+      <div className="flex h-full items-stretch justify-center overflow-y-auto ps-6 pe-3 pt-22 pb-3">
         <AnimatePresence mode="wait" initial={false}>
           {phase.state === 'idle' && (
             <motion.button
@@ -293,7 +286,7 @@ export function ImportView({
         isKeyboardDismissDisabled={false}
       >
         <AlertDialog.Container placement="center" size="sm" className={kinematicScale.container}>
-          <AlertDialog.Dialog className="glass-strong rounded-3xl border-none">
+          <AlertDialog.Dialog className="app-no-drag glass-strong rounded-3xl border-none">
             {({ close }) => (
               <>
                 <AlertDialog.CloseTrigger className="top-3 right-3 size-7 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/55 hover:text-white" />

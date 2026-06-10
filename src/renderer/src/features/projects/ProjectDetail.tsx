@@ -96,7 +96,7 @@ function DetailDialog({ project, open, onClose }: ProjectDetailProps): JSX.Eleme
       <Modal.Container placement="center" size="lg" className={kinematicScale.container}>
         <Modal.Dialog
           aria-label={project?.name ?? 'Project details'}
-          className="glass-strong w-full max-w-lg gap-0 overflow-hidden rounded-3xl border-none bg-white! p-0 dark:bg-[var(--glass-bg-strong)]!"
+          className="app-no-drag w-full max-w-lg gap-0 overflow-hidden rounded-3xl border border-border bg-background p-0 shadow-2xl"
         >
           {project && (
             <>

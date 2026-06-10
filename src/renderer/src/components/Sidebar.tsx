@@ -63,7 +63,7 @@ function NavItem({ item: { label, icon: Icon }, active, onSelect }: NavItemProps
 /** Floating Tahoe-style glass sidebar (navigation layer). */
 export function Sidebar({ view, onNavigate }: SidebarProps): JSX.Element {
   return (
-    <aside className="app-drag flex w-56 shrink-0 p-2">
+    <aside className="app-drag relative z-20 flex w-56 shrink-0 p-2">
       <div
         className={cn(
           'glass rounded-window-concentric flex w-full flex-col gap-1 overflow-hidden px-3 pb-4',

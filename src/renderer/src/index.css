@@ -227,6 +227,13 @@
     height: 100%;
   }
 
+  * {
+    scrollbar-width: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+  }
+
   body {
     /* Transparent (NOT bg-background) so native vibrancy (mac) / mica (win11)
        shows through; the <Wallpaper/> component paints the refractable backdrop. */

@@ -53,13 +53,8 @@ export function SettingsView({ settings, onChange, updates }: SettingsViewProps)
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <header className="app-drag px-6 pt-5 pb-3">
-        <h1 className="text-xl font-bold tracking-tight">Settings</h1>
-        <p className="text-[12px] text-muted-foreground">How CapShare finds and moves projects</p>
-      </header>
-
-      <div className="flex min-h-0 flex-1 flex-col gap-7 overflow-y-auto px-6 pt-4 pb-8">
+    <div className="relative h-full">
+      <div className="flex h-full flex-col gap-7 overflow-y-auto px-6 pt-23 pb-8">
         <SettingsGroup title="Locations">
           <SettingRow
             label="CapCut project folder"

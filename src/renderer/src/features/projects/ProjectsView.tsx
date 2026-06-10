@@ -1,6 +1,6 @@
 import { useRef, useState, type JSX, type Key } from 'react'
 import { createPortal } from 'react-dom'
-import { AlertTriangle, FileDown, FolderSearch, RefreshCw, Trash2 } from 'lucide-react'
+import { AlertTriangle, FileDown, FolderSearch, Trash2 } from 'lucide-react'
 import { AlertDialog, Button, Dropdown, Label, Skeleton, toast } from '@heroui/react'
 import type { DraftSummary, ProjectsResponse } from '@shared/types'
 import { cn } from '@/lib/utils'
@@ -81,29 +81,8 @@ export function ProjectsView({
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <header className="app-drag flex items-center justify-between px-6 pt-5 pb-3">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight">Projects</h1>
-          <p className="text-[12px] text-muted-foreground">
-            {projects?.found
-              ? `${projects.drafts.length} CapCut project${projects.drafts.length === 1 ? '' : 's'}`
-              : 'CapCut library'}
-          </p>
-        </div>
-        <Button
-          variant="ghost"
-          isIconOnly
-          className="app-no-drag rounded-full"
-          onPress={onRefresh}
-          isDisabled={loading}
-          aria-label="Refresh projects"
-        >
-          <RefreshCw className={cn('size-4', loading && 'animate-spin')} />
-        </Button>
-      </header>
-
-      <div className="min-h-0 flex-1 overflow-y-auto px-6 pt-2 pb-6">
+    <div className="relative h-full">
+      <div className="h-full overflow-y-auto px-6 pt-21 pb-6">
         {loading && !projects ? (
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -212,7 +191,7 @@ export function ProjectsView({
         )}
       >
         <AlertDialog.Container placement="center" size="sm" className={kinematicScale.container}>
-          <AlertDialog.Dialog className="glass-strong rounded-3xl border-none">
+          <AlertDialog.Dialog className="app-no-drag glass-strong rounded-3xl border-none">
             <AlertDialog.CloseTrigger
               isDisabled={deleting}
               className="top-3 right-3 size-7 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/55 hover:text-white"
