@@ -1,27 +1,34 @@
-import type { JSX } from 'react'
+import type { JSX, Ref } from 'react'
 import { motion } from 'motion/react'
 import { Clapperboard } from 'lucide-react'
 import type { DraftSummary } from '@shared/types'
 import { formatBytes, formatDate, formatDuration } from '@/lib/format'
+import { cardSpring } from '@/lib/motion'
 
 interface ProjectCardProps {
   project: DraftSummary
   index: number
   onOpen: (project: DraftSummary) => void
   onContextMenu: (project: DraftSummary, x: number, y: number) => void
+  // Forwarded so AnimatePresence's popLayout can measure and pop this card.
+  ref?: Ref<HTMLButtonElement>
 }
 
 export function ProjectCard({
   project,
   index,
   onOpen,
-  onContextMenu
+  onContextMenu,
+  ref
 }: ProjectCardProps): JSX.Element {
   return (
     <motion.button
+      ref={ref}
+      layout
       initial={{ opacity: 0, y: 14 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 350, damping: 28, delay: index * 0.04 }}
+      animate={{ opacity: 1, y: 0, transition: { ...cardSpring, delay: index * 0.04 } }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={cardSpring}
       onClick={() => onOpen(project)}
       onContextMenu={(e) => {
         e.preventDefault()

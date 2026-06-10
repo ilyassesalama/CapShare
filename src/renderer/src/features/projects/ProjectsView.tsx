@@ -1,5 +1,6 @@
 import { useRef, useState, type JSX, type Key } from 'react'
 import { createPortal } from 'react-dom'
+import { AnimatePresence } from 'motion/react'
 import { AlertTriangle, FileDown, FolderSearch, Trash2 } from 'lucide-react'
 import { AlertDialog, Button, Dropdown, Label, Skeleton, toast } from '@heroui/react'
 import type { DraftSummary, ProjectsResponse } from '@shared/types'
@@ -112,15 +113,17 @@ export function ProjectsView({
           />
         ) : (
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
-            {projects.drafts.map((project, index) => (
-              <ProjectCard
-                key={project.draftId + project.folderPath}
-                project={project}
-                index={index}
-                onOpen={openDetail}
-                onContextMenu={openContextMenu}
-              />
-            ))}
+            <AnimatePresence mode="popLayout">
+              {projects.drafts.map((project, index) => (
+                <ProjectCard
+                  key={project.draftId + project.folderPath}
+                  project={project}
+                  index={index}
+                  onOpen={openDetail}
+                  onContextMenu={openContextMenu}
+                />
+              ))}
+            </AnimatePresence>
           </div>
         )}
       </div>
