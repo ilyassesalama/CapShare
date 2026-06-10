@@ -16,10 +16,13 @@ import { AlertDialog, Button, ProgressBar, toast } from '@heroui/react'
 import type { CollisionResolution, ImportPreview, ImportResult } from '@shared/types'
 import { FaApple, FaWindows } from 'react-icons/fa6'
 import { AnimatedHeight } from '@/components/AnimatedHeight'
+import { StatChip } from '@/components/StatChip'
+import { useTaskProgress } from '@/hooks/use-task-progress'
 import { kinematicScale } from '@/lib/dialog-anim'
 import { formatBytes, formatDate, formatDuration, newTaskId } from '@/lib/format'
 import { errorMessage, unwrap } from '@/lib/ipc'
-import { cn } from '@/lib/utils'
+import { spring } from '@/lib/motion'
+import { closeButtonClass, cn } from '@/lib/utils'
 
 type ImportPhase =
   | { state: 'idle' }
@@ -44,15 +47,7 @@ export function ImportView({
   const [dragging, setDragging] = useState(false)
   const [collisionOpen, setCollisionOpen] = useState(false)
 
-  useEffect(() => {
-    return window.capshare.onProgress((event) => {
-      setPhase((current) =>
-        current.state === 'running' && current.taskId === event.taskId
-          ? { ...current, ratio: event.ratio }
-          : current
-      )
-    })
-  }, [])
+  useTaskProgress(setPhase)
 
   const inspect = useCallback(async (filePath: string): Promise<void> => {
     setPhase({ state: 'inspecting' })
@@ -130,7 +125,7 @@ export function ImportView({
 
   return (
     <div className="relative h-full">
-      <div className="flex h-full items-stretch justify-center overflow-y-auto ps-6 pe-3 pt-22 pb-3">
+      <div className="flex h-full items-stretch justify-center overflow-y-auto ps-4 pe-3 pt-22 pb-3">
         <AnimatePresence mode="wait" initial={false}>
           {phase.state === 'idle' && (
             <motion.button
@@ -226,7 +221,7 @@ export function ImportView({
           {(phase.state === 'preview' || phase.state === 'running') && (
             <PreviewCard
               key="preview"
-              preview={phase.state === 'preview' ? phase.preview : phase.preview}
+              preview={phase.preview}
               running={phase.state === 'running'}
               ratio={phase.state === 'running' ? phase.ratio : 0}
               onImport={startImport}
@@ -289,7 +284,7 @@ export function ImportView({
           <AlertDialog.Dialog className="app-no-drag glass-strong rounded-3xl border-none">
             {({ close }) => (
               <>
-                <AlertDialog.CloseTrigger className="top-3 right-3 size-7 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/55 hover:text-white" />
+                <AlertDialog.CloseTrigger className={cn('top-3 right-3', closeButtonClass)} />
                 <AlertDialog.Header>
                   <AlertDialog.Icon status="warning" />
                   <AlertDialog.Heading>This project already exists</AlertDialog.Heading>
@@ -378,7 +373,7 @@ function PreviewCard({
           isDisabled={running}
           onPress={onDiscard}
           aria-label="Discard import"
-          className="absolute top-3 right-3 size-7 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/55 hover:text-white"
+          className={cn('absolute top-3 right-3', closeButtonClass)}
         >
           <X className="size-4" />
         </Button>
@@ -386,15 +381,15 @@ function PreviewCard({
 
       <div className="flex flex-col gap-4 p-5">
         <div className="flex flex-wrap gap-2">
-          <Stat label="Duration" value={formatDuration(preview.durationUs)} />
+          <StatChip label="Duration" value={formatDuration(preview.durationUs)} />
           {preview.canvas && (
-            <Stat label="Canvas" value={`${preview.canvas.width}×${preview.canvas.height}`} />
+            <StatChip label="Canvas" value={`${preview.canvas.width}×${preview.canvas.height}`} />
           )}
-          {preview.fps && <Stat label="FPS" value={String(Math.round(preview.fps))} />}
-          <Stat label="Media" value={String(preview.mediaCount)} />
-          <Stat label="Size" value={formatBytes(preview.totalBytes)} />
-          <Stat label="Exported" value={formatDate(Date.parse(preview.exportedAt) || null)} />
-          {preview.includesCaches && <Stat label="AI caches" value="Included" />}
+          {preview.fps && <StatChip label="FPS" value={String(Math.round(preview.fps))} />}
+          <StatChip label="Media" value={String(preview.mediaCount)} />
+          <StatChip label="Size" value={formatBytes(preview.totalBytes)} />
+          <StatChip label="Exported" value={formatDate(Date.parse(preview.exportedAt) || null)} />
+          {preview.includesCaches && <StatChip label="AI caches" value="Included" />}
         </div>
 
         {(preview.collision || preview.compat.warnings.length > 0) && (
@@ -429,7 +424,7 @@ function PreviewCard({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
-                transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+                transition={spring}
                 className="glass-subtle flex flex-col gap-3 rounded-2xl p-4"
               >
                 <div className="flex items-center justify-between text-[12.5px]">
@@ -453,7 +448,7 @@ function PreviewCard({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
-                transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+                transition={spring}
               >
                 <Button className="w-full rounded-xl" onPress={onImport}>
                   <FileDown className="size-4" /> Import project
@@ -464,16 +459,5 @@ function PreviewCard({
         </AnimatedHeight>
       </div>
     </motion.div>
-  )
-}
-
-function Stat({ label, value }: { label: string; value: string }): JSX.Element {
-  return (
-    <div className="glass-subtle flex items-baseline gap-1.5 rounded-full px-3 py-1">
-      <span className="text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
-        {label}
-      </span>
-      <span className="text-[12px] font-semibold tabular-nums">{value}</span>
-    </div>
   )
 }

@@ -116,7 +116,7 @@ function App(): JSX.Element {
             don't fade on view switch; only the scrollable body animates. */}
         <main className="relative min-w-0 flex-1">
           <ProgressiveBlur position="top" className="-left-56 right-0 z-10 h-24" />
-          <header className="app-drag absolute inset-x-0 top-0 z-20 flex items-center justify-between px-6 pt-5 pb-3">
+          <header className="app-drag absolute inset-x-0 top-0 z-20 flex items-center justify-between px-4 pt-5 pb-3">
             <div>
               <h1 className="text-xl font-bold tracking-tight">{HEADERS[view].title}</h1>
               <p className="text-[12px] font-medium text-foreground/75">

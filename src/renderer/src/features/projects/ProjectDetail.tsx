@@ -1,12 +1,16 @@
-import { useEffect, useState, type JSX } from 'react'
+import { useState, type JSX } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { CheckCircle2, Clapperboard, FileDown, FolderOpen, X } from 'lucide-react'
 import { Button, Label, Modal, ProgressBar, Switch, toast } from '@heroui/react'
 import type { DraftSummary, ExportResult } from '@shared/types'
 import { MiniTimeline } from '@/components/MiniTimeline'
+import { StatChip } from '@/components/StatChip'
+import { useTaskProgress } from '@/hooks/use-task-progress'
 import { kinematicScale } from '@/lib/dialog-anim'
 import { formatBytes, formatDuration, newTaskId } from '@/lib/format'
 import { errorMessage, unwrap } from '@/lib/ipc'
+import { spring } from '@/lib/motion'
+import { closeButtonClass, cn } from '@/lib/utils'
 
 type ExportPhase =
   | { state: 'idle' }
@@ -37,15 +41,7 @@ function DetailDialog({ project, open, onClose }: ProjectDetailProps): JSX.Eleme
   const [includeCaches, setIncludeCaches] = useState(false)
   const [phase, setPhase] = useState<ExportPhase>({ state: 'idle' })
 
-  useEffect(() => {
-    return window.capshare.onProgress((event) => {
-      setPhase((current) =>
-        current.state === 'running' && current.taskId === event.taskId
-          ? { ...current, ratio: event.ratio }
-          : current
-      )
-    })
-  }, [])
+  useTaskProgress(setPhase)
 
   const startExport = async (): Promise<void> => {
     if (!project) return
@@ -117,7 +113,7 @@ function DetailDialog({ project, open, onClose }: ProjectDetailProps): JSX.Eleme
                   isIconOnly
                   onPress={() => !exporting && onClose()}
                   aria-label="Close"
-                  className="absolute top-3 right-3 size-7 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/55 hover:text-white"
+                  className={cn('absolute top-3 right-3', closeButtonClass)}
                 >
                   <X className="size-4" />
                 </Button>
@@ -156,7 +152,7 @@ function DetailDialog({ project, open, onClose }: ProjectDetailProps): JSX.Eleme
                       initial={{ opacity: 0, y: 10, scale: 0.98 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -6 }}
-                      transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+                      transition={spring}
                       className="glass-subtle flex items-center justify-between rounded-2xl p-4"
                     >
                       <div className="flex items-center gap-3">
@@ -193,7 +189,7 @@ function DetailDialog({ project, open, onClose }: ProjectDetailProps): JSX.Eleme
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -6 }}
-                      transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+                      transition={spring}
                       className="glass-subtle flex flex-col gap-3 rounded-2xl p-4"
                     >
                       <div className="flex items-center justify-between text-[12.5px]">
@@ -226,7 +222,7 @@ function DetailDialog({ project, open, onClose }: ProjectDetailProps): JSX.Eleme
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -6 }}
-                      transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+                      transition={spring}
                       className="flex flex-col gap-4"
                     >
                       <div className="glass-subtle rounded-2xl px-4">
@@ -262,16 +258,5 @@ function DetailDialog({ project, open, onClose }: ProjectDetailProps): JSX.Eleme
         </Modal.Dialog>
       </Modal.Container>
     </Modal.Backdrop>
-  )
-}
-
-function StatChip({ label, value }: { label: string; value: string }): JSX.Element {
-  return (
-    <div className="glass-subtle flex items-baseline gap-1.5 rounded-full px-3 py-1">
-      <span className="text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
-        {label}
-      </span>
-      <span className="text-[12px] font-semibold tabular-nums">{value}</span>
-    </div>
   )
 }

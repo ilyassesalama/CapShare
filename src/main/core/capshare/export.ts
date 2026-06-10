@@ -10,10 +10,10 @@ import {
   TIMELINE_FILENAMES,
   VOLATILE_FILE_PATTERNS
 } from '../capcut/constants'
-import { findTimelinePath, getPlatformBlock, summarizeTimeline } from '../capcut/draft'
+import { asString, findTimelinePath, getPlatformBlock, summarizeTimeline } from '../capcut/draft'
 import { toJsonPath } from '../capcut/locator'
 import type { CapCutEnv } from '../capcut/model'
-import { collectPaths, normalizeSlashes } from '../capcut/scanner'
+import { collectPaths } from '../capcut/scanner'
 import { CapShareError } from '../errors'
 import { sanitizeFolderName, walkFiles } from '../fsx'
 import { ZipWriter } from '../zip'
@@ -52,10 +52,6 @@ interface EffectPlan {
   cacheSuffix: string
   diskPath: string
   size: number
-}
-
-function asString(value: unknown): string | null {
-  return typeof value === 'string' && value.length > 0 ? value : null
 }
 
 /**
@@ -345,9 +341,4 @@ export async function exportDraft(options: ExportDraftOptions): Promise<ExportRe
     fileCount,
     warnings
   }
-}
-
-/** Normalized helper the importer also uses: lower-cases for comparison on win. */
-export function looseKey(originalPath: string): string {
-  return normalizeSlashes(originalPath).toLowerCase()
 }

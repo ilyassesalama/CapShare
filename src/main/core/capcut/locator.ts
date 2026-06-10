@@ -8,7 +8,7 @@ export function toJsonPath(p: string): string {
   return p.replace(/\\/g, '/')
 }
 
-export function capCutOsForPlatform(platform: NodeJS.Platform): CapCutOs | null {
+function capCutOsForPlatform(platform: NodeJS.Platform): CapCutOs | null {
   if (platform === 'darwin') return 'mac'
   if (platform === 'win32') return 'windows'
   return null

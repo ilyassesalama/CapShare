@@ -97,9 +97,12 @@ function buildDefaultEntry(): Record<string, unknown> {
   }
 }
 
-function patchEntry(entry: Record<string, unknown>, params: RegistryEntryParams): void {
-  const folderJson = toJsonPath(params.folderPath)
-  const rootJson = toJsonPath(params.draftRoot)
+function patchEntry(
+  entry: Record<string, unknown>,
+  params: RegistryEntryParams,
+  folderJson: string,
+  rootJson: string
+): void {
   entry['draft_id'] = params.draftId
   entry['draft_name'] = params.draftName
   entry['draft_cover'] = `${folderJson}/draft_cover.jpg`
@@ -111,6 +114,23 @@ function patchEntry(entry: Record<string, unknown>, params: RegistryEntryParams)
   entry['tm_draft_modified'] = params.modifiedUs ?? Date.now() * 1000
   entry['tm_draft_removed'] = 0
   entry['tm_duration'] = params.durationUs
+}
+
+/** Reads and validates the registry file; null = unreadable/malformed (skip). */
+async function loadRegistry(registryPath: string): Promise<RegistryFile | null> {
+  try {
+    const parsed = JSON.parse(await readFile(registryPath, 'utf8')) as unknown
+    if (
+      parsed === null ||
+      typeof parsed !== 'object' ||
+      !Array.isArray((parsed as RegistryFile).all_draft_store)
+    ) {
+      return null
+    }
+    return parsed as RegistryFile
+  } catch {
+    return null
+  }
 }
 
 /**
@@ -126,39 +146,30 @@ export async function upsertRegistryEntry(
     return { action: 'skipped-missing', backupPath: null }
   }
 
-  let registry: RegistryFile
-  try {
-    const parsed = JSON.parse(await readFile(registryPath, 'utf8')) as unknown
-    if (
-      parsed === null ||
-      typeof parsed !== 'object' ||
-      !Array.isArray((parsed as RegistryFile).all_draft_store)
-    ) {
-      return { action: 'skipped-malformed', backupPath: null }
-    }
-    registry = parsed as RegistryFile
-  } catch {
+  const registry = await loadRegistry(registryPath)
+  if (!registry) {
     return { action: 'skipped-malformed', backupPath: null }
   }
 
   const backupPath = `${registryPath}.capshare-backup-${Date.now()}`
   await copyFile(registryPath, backupPath)
 
-  const folderJsonLower = toJsonPath(params.folderPath).toLowerCase()
+  const folderJson = toJsonPath(params.folderPath)
+  const rootJson = toJsonPath(params.draftRoot)
   const existing = registry.all_draft_store.find((entry) =>
-    entryMatches(entry, params.draftId, folderJsonLower)
+    entryMatches(entry, params.draftId, folderJson.toLowerCase())
   )
 
   let action: 'patched' | 'inserted'
   if (existing) {
-    patchEntry(existing, params)
+    patchEntry(existing, params, folderJson, rootJson)
     action = 'patched'
   } else {
     const template = registry.all_draft_store[0]
     const entry = template
       ? (JSON.parse(JSON.stringify(template)) as Record<string, unknown>)
       : buildDefaultEntry()
-    patchEntry(entry, params)
+    patchEntry(entry, params, folderJson, rootJson)
     registry.all_draft_store.unshift(entry)
     // draft_ids is a COUNT, not a list — verified on the real registry.
     registry.draft_ids = (typeof registry.draft_ids === 'number' ? registry.draft_ids : 0) + 1
@@ -205,18 +216,8 @@ export async function removeRegistryEntry(
     return { action: 'skipped-missing', backupPath: null }
   }
 
-  let registry: RegistryFile
-  try {
-    const parsed = JSON.parse(await readFile(registryPath, 'utf8')) as unknown
-    if (
-      parsed === null ||
-      typeof parsed !== 'object' ||
-      !Array.isArray((parsed as RegistryFile).all_draft_store)
-    ) {
-      return { action: 'skipped-malformed', backupPath: null }
-    }
-    registry = parsed as RegistryFile
-  } catch {
+  const registry = await loadRegistry(registryPath)
+  if (!registry) {
     return { action: 'skipped-malformed', backupPath: null }
   }
 

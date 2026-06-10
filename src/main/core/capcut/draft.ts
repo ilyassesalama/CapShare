@@ -97,7 +97,7 @@ function asArray(value: unknown): unknown[] {
   return Array.isArray(value) ? value : []
 }
 
-function asString(value: unknown): string | null {
+export function asString(value: unknown): string | null {
   return typeof value === 'string' && value.length > 0 ? value : null
 }
 

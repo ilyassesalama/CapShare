@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@electron-toolkit/preload':
-        specifier: ^3.0.2
-        version: 3.0.2(electron@42.3.3)
       '@electron-toolkit/utils':
         specifier: ^4.0.0
         version: 4.0.0(electron@42.3.3)
@@ -102,9 +99,6 @@ importers:
       motion:
         specifier: ^12.40.0
         version: 12.40.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      png-to-ico:
-        specifier: ^3.0.1
-        version: 3.0.1
       prettier:
         specifier: ^3.7.4
         version: 3.8.3
@@ -271,11 +265,6 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
-
-  '@electron-toolkit/preload@3.0.2':
-    resolution: {integrity: sha512-TWWPToXd8qPRfSXwzf5KVhpXMfONaUuRAZJHsKthKgZR/+LqX1dZVSSClQ8OTAEduvLGdecljCsoT2jSshfoUg==}
-    peerDependencies:
-      electron: '>=13.0.0'
 
   '@electron-toolkit/tsconfig@2.0.0':
     resolution: {integrity: sha512-AdPsP770WhW7b260h13SHMdmjEEHJL6xFtgi3jwgdsSQbJOkJLeNnnpZW9qxTPCvmRI6vmdzWz5K3gibFS6SNg==}
@@ -2840,15 +2829,6 @@ packages:
     resolution: {integrity: sha512-ZIfcLJC+7E7FBFnDxm9MPmt7D+DidyQ26lewieO75AdhA2ayMtsJSES0iWzqJQbcVRSrTufQoy0DR94xHue0oA==}
     engines: {node: '>=10.4.0'}
 
-  png-to-ico@3.0.1:
-    resolution: {integrity: sha512-S8BOAoaGd9gT5uaemQ62arIY3Jzco7Uc7LwUTqRyqJDTsKqOAiyfyN4dSdT0D+Zf8XvgztgpRbM5wnQd7EgYwg==}
-    engines: {node: '>=20'}
-    hasBin: true
-
-  pngjs@7.0.0:
-    resolution: {integrity: sha512-LKWqWJRhstyYo9pGvgor/ivk2w94eSjE3RGVuzLGlr3NmD8bf7RcYGze1mNdEHRP6TRP6rMuDHk5t44hnTRyow==}
-    engines: {node: '>=14.19.0'}
-
   possible-typed-array-names@1.1.0:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
     engines: {node: '>= 0.4'}
@@ -3749,10 +3729,6 @@ snapshots:
       typescript: 5.9.3
     transitivePeerDependencies:
       - supports-color
-
-  '@electron-toolkit/preload@3.0.2(electron@42.3.3)':
-    dependencies:
-      electron: 42.3.3
 
   '@electron-toolkit/tsconfig@2.0.0(@types/node@22.19.20)':
     dependencies:
@@ -6535,14 +6511,6 @@ snapshots:
       base64-js: 1.5.1
       xmlbuilder: 15.1.1
     optional: true
-
-  png-to-ico@3.0.1:
-    dependencies:
-      '@types/node': 22.19.20
-      minimist: 1.2.8
-      pngjs: 7.0.0
-
-  pngjs@7.0.0: {}
 
   possible-typed-array-names@1.1.0: {}
 

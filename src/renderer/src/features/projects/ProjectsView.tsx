@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { AlertTriangle, FileDown, FolderSearch, Trash2 } from 'lucide-react'
 import { AlertDialog, Button, Dropdown, Label, Skeleton, toast } from '@heroui/react'
 import type { DraftSummary, ProjectsResponse } from '@shared/types'
-import { cn } from '@/lib/utils'
+import { closeButtonClass, cn } from '@/lib/utils'
 import { kinematicScale } from '@/lib/dialog-anim'
 import { errorMessage, unwrap } from '@/lib/ipc'
 import { ProjectCard } from './ProjectCard'
@@ -82,7 +82,7 @@ export function ProjectsView({
 
   return (
     <div className="relative h-full">
-      <div className="h-full overflow-y-auto px-6 pt-21 pb-6">
+      <div className="h-full overflow-y-auto px-4 pt-21 pb-6">
         {loading && !projects ? (
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -194,7 +194,7 @@ export function ProjectsView({
           <AlertDialog.Dialog className="app-no-drag glass-strong rounded-3xl border-none">
             <AlertDialog.CloseTrigger
               isDisabled={deleting}
-              className="top-3 right-3 size-7 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/55 hover:text-white"
+              className={cn('top-3 right-3', closeButtonClass)}
             />
             <AlertDialog.Header className="items-center text-center">
               <AlertDialog.Icon status="danger">

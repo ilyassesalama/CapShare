@@ -88,10 +88,4 @@ function CloudDownload(props: CloudDownloadProps) {
   return <IconWrapper icon={IconComponent} {...props} />
 }
 
-export {
-  animations,
-  CloudDownload,
-  CloudDownload as CloudDownloadIcon,
-  type CloudDownloadProps,
-  type CloudDownloadProps as CloudDownloadIconProps
-}
+export { CloudDownload, CloudDownload as CloudDownloadIcon, type CloudDownloadProps }

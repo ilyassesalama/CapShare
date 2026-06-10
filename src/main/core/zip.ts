@@ -8,10 +8,6 @@ import yauzl from 'yauzl'
 import yazl from 'yazl'
 import { CapShareError } from './errors'
 
-export interface ZipProgress {
-  processedBytes: number
-}
-
 export interface ZipWriterEntryFile {
   kind: 'file'
   absPath: string

@@ -37,6 +37,15 @@ export interface CollisionInfo {
   existingFolderPath: string
 }
 
+/** readdir that returns null instead of throwing (missing/unreadable dir). */
+async function tryReadDir(dir: string): Promise<string[] | null> {
+  try {
+    return await readdir(dir)
+  } catch {
+    return null
+  }
+}
+
 /** Light collision probe: folder basenames + per-draft meta draft_ids only. */
 export async function findCollision(
   draftRoot: string,
@@ -45,12 +54,8 @@ export async function findCollision(
   os: CapCutEnv['os']
 ): Promise<CollisionInfo | null> {
   const wantedFolder = sanitizeFolderName(draftName, os).toLowerCase()
-  let entries: string[]
-  try {
-    entries = await readdir(draftRoot)
-  } catch {
-    return null
-  }
+  const entries = await tryReadDir(draftRoot)
+  if (!entries) return null
   for (const name of entries) {
     if (name.startsWith('.')) continue
     const folder = join(draftRoot, name)
@@ -80,6 +85,14 @@ export async function inspectCapshare(
   filePath: string,
   env: CapCutEnv | null
 ): Promise<ImportPreview> {
+  return (await inspectCapshareWithManifest(filePath, env)).preview
+}
+
+/** inspectCapshare plus the parsed manifest, so importers avoid a second zip read. */
+async function inspectCapshareWithManifest(
+  filePath: string,
+  env: CapCutEnv | null
+): Promise<{ preview: ImportPreview; manifest: CapShareManifest }> {
   let entries: Map<string, Buffer>
   try {
     entries = await readZipEntries(filePath, [MANIFEST_ENTRY_NAME, COVER_ENTRY_NAME])
@@ -125,7 +138,7 @@ export async function inspectCapshare(
     ? await findCollision(env.draftRoot, manifest.source.draftName, manifest.source.draftId, env.os)
     : null
 
-  return {
+  const preview: ImportPreview = {
     filePath,
     draftName: manifest.source.draftName,
     coverDataUrl: cover ? `data:image/jpeg;base64,${cover.toString('base64')}` : null,
@@ -147,6 +160,7 @@ export async function inspectCapshare(
     },
     collision
   }
+  return { preview, manifest }
 }
 
 export interface ImportCapshareOptions {
@@ -193,12 +207,8 @@ export async function probeTargetTimelineFilename(
 
 /** Harvests a platform block from any existing draft on the target machine. */
 async function harvestDonorPlatform(env: CapCutEnv): Promise<CapCutPlatformBlock | null> {
-  let entries: string[]
-  try {
-    entries = await readdir(env.draftRoot)
-  } catch {
-    return null
-  }
+  const entries = await tryReadDir(env.draftRoot)
+  if (!entries) return null
   for (const name of entries) {
     if (name.startsWith('.')) continue
     const paths = findTimelinePath(join(env.draftRoot, name))
@@ -255,11 +265,7 @@ export async function importCapshare(options: ImportCapshareOptions): Promise<Im
   const uuid = options.uuid ?? ((): string => randomUUID().toUpperCase())
   const warnings: string[] = []
 
-  const preview = await inspectCapshare(filePath, env)
-  const manifestRaw = (await readZipEntries(filePath, [MANIFEST_ENTRY_NAME])).get(
-    MANIFEST_ENTRY_NAME
-  )!
-  const manifest = parseManifest(manifestRaw.toString('utf8'))
+  const { preview, manifest } = await inspectCapshareWithManifest(filePath, env)
 
   let finalName = manifest.source.draftName
   let draftId = manifest.source.draftId

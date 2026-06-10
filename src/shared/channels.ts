@@ -8,7 +8,6 @@ export const IPC = {
   progress: 'task:progress',
 
   listProjects: 'projects:list',
-  refreshProjects: 'projects:refresh',
   deleteProject: 'projects:delete',
 
   pickExportDestination: 'export:pick-destination',

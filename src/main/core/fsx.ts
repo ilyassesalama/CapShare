@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import { createReadStream } from 'node:fs'
-import { lstat, mkdir, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
+import { lstat, mkdir, readdir, rename, rm, writeFile } from 'node:fs/promises'
 import { dirname, join, relative } from 'node:path'
 import { pipeline } from 'node:stream/promises'
 
@@ -73,12 +73,6 @@ export async function hashFile(
 
 export function hashString(value: string, algorithm: 'sha256' | 'md5' = 'sha256'): string {
   return createHash(algorithm).update(value).digest('hex')
-}
-
-/** Reads and parses a JSON file; the `expect` label improves error messages. */
-export async function readJsonFile<T = Record<string, unknown>>(path: string): Promise<T> {
-  const raw = await readFile(path, 'utf8')
-  return JSON.parse(raw) as T
 }
 
 /**

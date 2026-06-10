@@ -54,7 +54,7 @@ export function SettingsView({ settings, onChange, updates }: SettingsViewProps)
 
   return (
     <div className="relative h-full">
-      <div className="flex h-full flex-col gap-7 overflow-y-auto px-6 pt-23 pb-8">
+      <div className="flex h-full flex-col gap-7 overflow-y-auto px-4 pt-23 pb-8">
         <SettingsGroup title="Locations">
           <SettingRow
             label="CapCut project folder"
