@@ -307,6 +307,39 @@
   }
 }
 
+/* Chromium can't crossfade backdrop-filter: while a blur backdrop (or any
+   ancestor of a frosted panel) animates opacity, the frost drops out and pops
+   back when the animation ends. Fix: hold blur backdrops at full opacity for
+   the enter/exit duration (the panel provides the motion), and let panels skip
+   their own filter — the backdrop already frosts everything behind them. */
+@keyframes capshare-hold {
+  to {
+    opacity: 1;
+  }
+}
+:is(.modal__backdrop--blur, .alert-dialog__backdrop--blur, .drawer__backdrop--blur):is(
+    [data-entering='true'],
+    [data-exiting='true']
+  ) {
+  animation-name: capshare-hold !important;
+}
+:is(.modal__backdrop--blur, .alert-dialog__backdrop--blur, .drawer__backdrop--blur)
+  .glass-strong {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* Import drop zone: marching-ants dashed border while dragging. Offset by one
+   full dash period (dasharray 8 8 → 16) so the loop is seamless. */
+@keyframes capshare-march {
+  to {
+    stroke-dashoffset: -16;
+  }
+}
+.drop-zone-dashes {
+  animation: capshare-march 0.45s linear infinite;
+}
+
 /* Accessibility: honor reduced transparency / motion */
 @media (prefers-reduced-transparency: reduce) {
   .glass,

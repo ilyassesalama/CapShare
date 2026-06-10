@@ -213,6 +213,10 @@ export function ProjectsView({
       >
         <AlertDialog.Container placement="center" size="sm" className={kinematicScale.container}>
           <AlertDialog.Dialog className="glass-strong rounded-3xl border-none">
+            <AlertDialog.CloseTrigger
+              isDisabled={deleting}
+              className="top-3 right-3 size-7 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/55 hover:text-white"
+            />
             <AlertDialog.Header className="items-center text-center">
               <AlertDialog.Icon status="danger">
                 <AlertTriangle className="size-5" />
@@ -225,7 +229,7 @@ export function ProjectsView({
               This removes the project from your CapCut library and moves its folder to the{' '}
               {trashName}, where you can still restore it.
             </AlertDialog.Body>
-            <AlertDialog.Footer className="flex-col gap-2 sm:flex-col">
+            <AlertDialog.Footer>
               <Button
                 variant="danger"
                 className="w-full rounded-full"
@@ -233,14 +237,6 @@ export function ProjectsView({
                 onPress={() => void confirmDelete()}
               >
                 Move to {trashName}
-              </Button>
-              <Button
-                slot="close"
-                variant="tertiary"
-                className="w-full rounded-full"
-                isDisabled={deleting}
-              >
-                Keep project
               </Button>
             </AlertDialog.Footer>
           </AlertDialog.Dialog>

@@ -88,7 +88,7 @@ function DetailDialog({ project, open, onClose }: ProjectDetailProps): JSX.Eleme
     <Modal.Backdrop
       isOpen={open && project !== null}
       onOpenChange={(nextOpen) => !nextOpen && !exporting && onClose()}
-      variant="opaque"
+      variant="blur"
       className={kinematicScale.backdrop}
       isDismissable={!exporting}
       isKeyboardDismissDisabled={exporting}

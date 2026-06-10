@@ -5,7 +5,9 @@ import {
   AppWindow,
   CheckCircle2,
   Clapperboard,
+  FileDown,
   FileUp,
+  FolderOpen,
   Loader2,
   Rocket
 } from 'lucide-react'
@@ -139,7 +141,7 @@ export function ImportView({
             <motion.button
               key="idle"
               initial={{ opacity: 0, scale: 0.99 }}
-              animate={{ opacity: 1, scale: dragging ? 1.01 : 1 }}
+              animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.99 }}
               transition={{ type: 'spring', stiffness: 380, damping: 30 }}
               onDragOver={(e) => {
@@ -150,18 +152,57 @@ export function ImportView({
               onDrop={onDrop}
               onClick={() => void browse()}
               className={cn(
-                'flex w-full flex-col items-center justify-center gap-4 rounded-3xl border-2 border-dashed',
-                dragging
-                  ? 'border-primary bg-primary/5'
-                  : 'border-border hover:border-primary/40 hover:bg-foreground/2'
+                'group relative flex w-full flex-col items-center justify-center gap-4 rounded-3xl transition-colors duration-200',
+                dragging ? 'bg-primary/5' : 'hover:bg-foreground/2'
               )}
             >
+              <svg className="pointer-events-none absolute inset-0 size-full" aria-hidden="true">
+                <rect
+                  rx="23"
+                  fill="none"
+                  strokeWidth="2"
+                  strokeDasharray="8 8"
+                  style={{ x: 1, y: 1, width: 'calc(100% - 2px)', height: 'calc(100% - 2px)' }}
+                  className={cn(
+                    'transition-[stroke] duration-200',
+                    dragging
+                      ? 'drop-zone-dashes stroke-primary'
+                      : 'stroke-border group-hover:stroke-primary/40'
+                  )}
+                />
+              </svg>
               <motion.div
-                animate={dragging ? { y: -6, scale: 1.08 } : { y: 0, scale: 1 }}
-                transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+                animate={
+                  dragging
+                    ? { y: -4, scale: 1.04, rotate: [0, -4, 4, -3, 3, 0] }
+                    : { y: 0, scale: 1, rotate: 0 }
+                }
+                transition={
+                  dragging
+                    ? {
+                        y: { type: 'spring', stiffness: 320, damping: 22 },
+                        scale: { type: 'spring', stiffness: 320, damping: 22 },
+                        rotate: { duration: 0.9, ease: 'easeInOut', repeat: Infinity }
+                      }
+                    : { type: 'spring', stiffness: 320, damping: 22 }
+                }
                 className="glass flex size-20 items-center justify-center rounded-[28px]"
               >
-                <FileUp className="size-9 text-primary" strokeWidth={1.7} />
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span
+                    key={dragging ? 'drop' : 'idle'}
+                    initial={{ opacity: 0, scale: 0.6 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.6 }}
+                    transition={{ duration: 0.15, ease: 'easeOut' }}
+                  >
+                    {dragging ? (
+                      <FileDown className="size-9 text-primary" strokeWidth={1.7} />
+                    ) : (
+                      <FileUp className="size-9 text-primary" strokeWidth={1.7} />
+                    )}
+                  </motion.span>
+                </AnimatePresence>
               </motion.div>
               <div className="text-center">
                 <div className="text-[15px] font-semibold">
@@ -222,7 +263,7 @@ export function ImportView({
                   className="rounded-full"
                   onPress={() => void window.capshare.revealPath(phase.result.folderPath)}
                 >
-                  Reveal folder
+                  <FolderOpen className="size-4" /> Reveal folder
                 </Button>
                 <Button className="rounded-full" onPress={() => void launchCapCut()}>
                   <Rocket className="size-4" /> Open CapCut
@@ -244,7 +285,7 @@ export function ImportView({
       <AlertDialog.Backdrop
         isOpen={collisionOpen}
         onOpenChange={setCollisionOpen}
-        variant="opaque"
+        variant="blur"
         className={kinematicScale.backdrop}
         isDismissable
         isKeyboardDismissDisabled={false}
@@ -253,37 +294,35 @@ export function ImportView({
           <AlertDialog.Dialog className="glass-strong rounded-3xl border-none">
             {({ close }) => (
               <>
+                <AlertDialog.CloseTrigger className="top-3 right-3 size-7 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/55 hover:text-white" />
                 <AlertDialog.Header>
                   <AlertDialog.Icon status="warning" />
                   <AlertDialog.Heading>This project already exists</AlertDialog.Heading>
                 </AlertDialog.Header>
                 <AlertDialog.Body>
                   {phase.state === 'preview' && phase.preview.collision
-                    ? `A project named “${phase.preview.collision.existingName}” is already in your CapCut library. What should happen?`
+                    ? `A project named “${phase.preview.collision.existingName}” is already in your CapCut library. Replacing it keeps a backup of the existing project.`
                     : ''}
                 </AlertDialog.Body>
-                <AlertDialog.Footer className="flex-col gap-2 sm:flex-col">
+                <AlertDialog.Footer className="flex-row gap-2">
                   <Button
-                    className="w-full rounded-full"
+                    variant="danger"
+                    className="flex-1 rounded-full"
+                    onPress={() => {
+                      if (phase.state === 'preview') void runImport(phase.preview, 'replace')
+                      close()
+                    }}
+                  >
+                    Replace existing
+                  </Button>
+                  <Button
+                    className="flex-1 rounded-full"
                     onPress={() => {
                       if (phase.state === 'preview') void runImport(phase.preview, 'copy')
                       close()
                     }}
                   >
                     Import as a copy
-                  </Button>
-                  <Button
-                    variant="danger"
-                    className="w-full rounded-full"
-                    onPress={() => {
-                      if (phase.state === 'preview') void runImport(phase.preview, 'replace')
-                      close()
-                    }}
-                  >
-                    Replace existing (backs up the old one)
-                  </Button>
-                  <Button slot="close" variant="tertiary" className="w-full rounded-full">
-                    Cancel
                   </Button>
                 </AlertDialog.Footer>
               </>
@@ -315,38 +354,41 @@ function PreviewCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8, scale: 0.98 }}
       transition={{ type: 'spring', stiffness: 320, damping: 26 }}
-      className="glass my-auto w-full max-w-xl overflow-hidden rounded-3xl"
+      className="glass-strong my-auto w-full max-w-md overflow-hidden rounded-3xl"
     >
-      <div className="relative h-48 w-full overflow-hidden bg-foreground/4">
+      <div className="relative aspect-video w-full overflow-hidden bg-foreground/4">
         {preview.coverDataUrl ? (
           <img src={preview.coverDataUrl} alt="" className="size-full object-cover" />
         ) : (
-          <div className="flex size-full items-center justify-center text-muted-foreground/40">
-            <Clapperboard className="size-12" strokeWidth={1.3} />
+          <div className="flex size-full items-center justify-center text-muted-foreground/30">
+            <Clapperboard className="size-14" strokeWidth={1.2} />
           </div>
         )}
-        <div className="absolute inset-x-0 bottom-0 h-20 bg-linear-to-t from-black/60 to-transparent" />
-        <div className="absolute bottom-3 left-5 text-lg font-bold text-white drop-shadow">
-          {preview.draftName}
-        </div>
-        <div className="absolute top-3 left-3 flex items-center gap-1.5 rounded-full bg-black/45 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm">
+        <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/10 to-transparent" />
+        <span className="absolute top-3 left-3 flex items-center gap-1.5 rounded-full bg-black/45 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-md">
           <SourceIcon className="size-3.5" />
           {preview.compat.sourceOs === 'mac' ? 'macOS' : 'Windows'}
-          {preview.compat.sourceCapcutVersion && ` · CapCut ${preview.compat.sourceCapcutVersion}`}
+          {preview.compat.sourceCapcutVersion && ` · ${preview.compat.sourceCapcutVersion}`}
+        </span>
+        <div className="absolute inset-x-0 bottom-0 p-4">
+          <div className="text-[11px] font-semibold tracking-wide text-white/70 uppercase">
+            Ready to import
+          </div>
+          <div className="truncate text-lg font-bold text-white drop-shadow">
+            {preview.draftName}
+          </div>
         </div>
       </div>
 
       <div className="flex flex-col gap-4 p-5">
-        <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-muted-foreground">
-          <span>{formatDuration(preview.durationUs)}</span>
+        <div className="flex flex-wrap gap-2">
+          <Stat label="Duration" value={formatDuration(preview.durationUs)} />
           {preview.canvas && (
-            <span>
-              {preview.canvas.width}×{preview.canvas.height}
-            </span>
+            <Stat label="Canvas" value={`${preview.canvas.width}×${preview.canvas.height}`} />
           )}
-          <span>{preview.mediaCount} media</span>
-          <span>{formatBytes(preview.totalBytes)}</span>
-          <span>exported {formatDate(Date.parse(preview.exportedAt) || null)}</span>
+          <Stat label="Media" value={String(preview.mediaCount)} />
+          <Stat label="Size" value={formatBytes(preview.totalBytes)} />
+          <Stat label="Exported" value={formatDate(Date.parse(preview.exportedAt) || null)} />
         </div>
 
         {preview.compat.warnings.length > 0 && (
@@ -376,16 +418,27 @@ function PreviewCard({
             </ProgressBar>
           </div>
         ) : (
-          <div className="flex justify-end gap-2">
-            <Button variant="ghost" className="rounded-full" onPress={onDiscard}>
+          <div className="flex gap-2 mt-4">
+            <Button variant="ghost" className="flex-1 rounded-full" onPress={onDiscard}>
               Cancel
             </Button>
-            <Button className="rounded-full px-5" onPress={onImport}>
-              Import project
+            <Button className="flex-1 rounded-full" onPress={onImport}>
+              <FileUp className="size-4" /> Import project
             </Button>
           </div>
         )}
       </div>
     </motion.div>
+  )
+}
+
+function Stat({ label, value }: { label: string; value: string }): JSX.Element {
+  return (
+    <div className="glass-subtle flex items-baseline gap-1.5 rounded-full px-3 py-1">
+      <span className="text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
+        {label}
+      </span>
+      <span className="text-[12px] font-semibold tabular-nums">{value}</span>
+    </div>
   )
 }
