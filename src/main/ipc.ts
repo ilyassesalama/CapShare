@@ -13,6 +13,7 @@ import type {
   ProjectsResponse
 } from '../shared/types'
 import { isCapCutRunning, launchCapCut } from './capcut-app'
+import { deleteDraft } from './core/capcut/delete'
 import { listDraftSummaries } from './core/capcut/draft'
 import { detectCapCutEnvFromProcess } from './core/capcut/locator'
 import type { CapCutEnv } from './core/capcut/model'
@@ -95,6 +96,11 @@ const importRequestSchema = z.object({
   resolution: z.enum(['copy', 'replace']).optional()
 })
 
+const deleteRequestSchema = z.object({
+  folderPath: z.string().min(1),
+  draftId: z.string().min(1)
+})
+
 const settingsUpdateSchema = z.object({
   draftRootOverride: z.string().nullable().optional(),
   defaultExportDir: z.string().nullable().optional(),
@@ -120,6 +126,22 @@ export function registerIpcHandlers(ctx: IpcContext): void {
       }
       const { drafts, warnings } = await listDraftSummaries(env.draftRoot)
       return ok({ found: true, draftRoot: env.draftRoot, os: env.os, drafts, warnings })
+    } catch (error) {
+      return fail(error)
+    }
+  })
+
+  ipcMain.handle(IPC.deleteProject, async (_event, raw: unknown): Promise<IpcResult<void>> => {
+    try {
+      const request = deleteRequestSchema.parse(raw)
+      const env = requireEnv()
+      await deleteDraft({
+        draftRoot: env.draftRoot,
+        folderPath: request.folderPath,
+        draftId: request.draftId,
+        trashFolder: (path) => shell.trashItem(path)
+      })
+      return ok(undefined)
     } catch (error) {
       return fail(error)
     }

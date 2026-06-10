@@ -39,6 +39,9 @@ const api = {
 
   listProjects: (): Promise<IpcResult<ProjectsResponse>> => ipcRenderer.invoke(IPC.listProjects),
 
+  deleteProject: (request: { folderPath: string; draftId: string }): Promise<IpcResult<void>> =>
+    ipcRenderer.invoke(IPC.deleteProject, request),
+
   pickExportDestination: (defaultName: string): Promise<IpcResult<string | null>> =>
     ipcRenderer.invoke(IPC.pickExportDestination, defaultName),
 

@@ -1,8 +1,11 @@
-import { useState, type JSX } from 'react'
-import { FolderSearch, RefreshCw } from 'lucide-react'
-import { Button, Skeleton } from '@heroui/react'
+import { useRef, useState, type JSX, type Key } from 'react'
+import { createPortal } from 'react-dom'
+import { AlertTriangle, FileDown, FolderSearch, RefreshCw, Trash2 } from 'lucide-react'
+import { AlertDialog, Button, Dropdown, Label, Skeleton, toast } from '@heroui/react'
 import type { DraftSummary, ProjectsResponse } from '@shared/types'
 import { cn } from '@/lib/utils'
+import { kinematicScale } from '@/lib/dialog-anim'
+import { errorMessage, unwrap } from '@/lib/ipc'
 import { ProjectCard } from './ProjectCard'
 import { ProjectDetail } from './ProjectDetail'
 
@@ -23,9 +26,58 @@ export function ProjectsView({
   // `selected` survives close so the dialog can animate out with its content.
   const [detailOpen, setDetailOpen] = useState(false)
 
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [menuTarget, setMenuTarget] = useState<DraftSummary | null>(null)
+  const [menuPos, setMenuPos] = useState({ x: 0, y: 0 })
+  const anchorRef = useRef<HTMLSpanElement>(null)
+
+  const [deleteTarget, setDeleteTarget] = useState<DraftSummary | null>(null)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const trashName = window.capshare.env.platform === 'win32' ? 'Recycle Bin' : 'Trash'
+
   const openDetail = (project: DraftSummary): void => {
     setSelected(project)
     setDetailOpen(true)
+  }
+
+  const openContextMenu = (project: DraftSummary, x: number, y: number): void => {
+    setMenuTarget(project)
+    setMenuPos({ x, y })
+    setMenuOpen(true)
+  }
+
+  const onMenuAction = (key: Key): void => {
+    const target = menuTarget
+    setMenuOpen(false)
+    if (!target) return
+    if (key === 'export') {
+      openDetail(target)
+    } else if (key === 'delete') {
+      setDeleteTarget(target)
+      setDeleteOpen(true)
+    }
+  }
+
+  const confirmDelete = async (): Promise<void> => {
+    if (!deleteTarget) return
+    setDeleting(true)
+    try {
+      unwrap(
+        await window.capshare.deleteProject({
+          folderPath: deleteTarget.folderPath,
+          draftId: deleteTarget.draftId
+        })
+      )
+      toast.success(`Moved “${deleteTarget.name}” to ${trashName}`)
+      if (selected?.folderPath === deleteTarget.folderPath) setDetailOpen(false)
+      setDeleteOpen(false)
+      onRefresh()
+    } catch (error) {
+      toast.danger(errorMessage(error))
+    } finally {
+      setDeleting(false)
+    }
   }
 
   return (
@@ -87,6 +139,7 @@ export function ProjectsView({
                 project={project}
                 index={index}
                 onOpen={openDetail}
+                onContextMenu={openContextMenu}
               />
             ))}
           </div>
@@ -94,6 +147,105 @@ export function ProjectsView({
       </div>
 
       <ProjectDetail project={selected} open={detailOpen} onClose={() => setDetailOpen(false)} />
+
+      {/* Cursor anchor for the shared right-click menu. Portaled to <body> so its
+          `fixed` position is relative to the viewport — ancestors here (motion's
+          filter, the glass backdrop-filter) create a containing block that would
+          otherwise offset it from the actual cursor. */}
+      {createPortal(
+        <span
+          ref={anchorRef}
+          aria-hidden
+          style={{
+            position: 'fixed',
+            left: menuPos.x,
+            top: menuPos.y,
+            width: 0,
+            height: 0,
+            pointerEvents: 'none'
+          }}
+        />,
+        document.body
+      )}
+      <Dropdown
+        isOpen={menuOpen}
+        onOpenChange={(open) => {
+          setMenuOpen(open)
+          if (!open) setMenuTarget(null)
+        }}
+      >
+        {/* Hidden trigger: MenuTrigger needs one; its position is overridden by triggerRef. */}
+        <Button aria-label="Project actions" excludeFromTabOrder className="sr-only" />
+        <Dropdown.Popover
+          triggerRef={anchorRef}
+          placement="bottom start"
+          offset={4}
+          className="min-w-44"
+        >
+          <Dropdown.Menu aria-label="Project actions" onAction={onMenuAction}>
+            <Dropdown.Item id="export" textValue="Export">
+              <FileDown className="size-4 shrink-0 text-muted-foreground" />
+              <Label>Export…</Label>
+            </Dropdown.Item>
+            <Dropdown.Item id="delete" textValue="Delete" variant="danger">
+              <Trash2 className="size-4 shrink-0 text-[color:var(--danger)]" />
+              <Label>Delete</Label>
+            </Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown.Popover>
+      </Dropdown>
+
+      <AlertDialog.Backdrop
+        isOpen={deleteOpen}
+        onOpenChange={(open) => {
+          if (deleting) return // block dismissal while a delete is in flight
+          setDeleteOpen(open)
+          // Keep `deleteTarget` set so its name stays visible through the close
+          // animation (it's overwritten next open) — mirrors how `selected` works.
+        }}
+        variant="blur"
+        isDismissable={!deleting}
+        isKeyboardDismissDisabled={deleting}
+        className={cn(
+          kinematicScale.backdrop,
+          'bg-linear-to-t from-red-950/90 via-red-950/50 to-transparent dark:from-red-950/95 dark:via-red-950/60'
+        )}
+      >
+        <AlertDialog.Container placement="center" size="sm" className={kinematicScale.container}>
+          <AlertDialog.Dialog className="glass-strong rounded-3xl border-none">
+            <AlertDialog.Header className="items-center text-center">
+              <AlertDialog.Icon status="danger">
+                <AlertTriangle className="size-5" />
+              </AlertDialog.Icon>
+              <AlertDialog.Heading>
+                Move “{deleteTarget?.name}” to {trashName}?
+              </AlertDialog.Heading>
+            </AlertDialog.Header>
+            <AlertDialog.Body>
+              This removes the project from your CapCut library and moves its folder to the{' '}
+              {trashName}, where you can still restore it.
+            </AlertDialog.Body>
+            <AlertDialog.Footer className="flex-col gap-2 sm:flex-col">
+              <Button
+                variant="danger"
+                className="w-full rounded-full"
+                isPending={deleting}
+                onPress={() => void confirmDelete()}
+              >
+                Move to {trashName}
+              </Button>
+              <Button
+                slot="close"
+                variant="tertiary"
+                className="w-full rounded-full"
+                isDisabled={deleting}
+              >
+                Keep project
+              </Button>
+            </AlertDialog.Footer>
+          </AlertDialog.Dialog>
+        </AlertDialog.Container>
+      </AlertDialog.Backdrop>
     </div>
   )
 }

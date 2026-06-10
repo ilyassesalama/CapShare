@@ -41,6 +41,24 @@ export interface RegistryUpsertResult {
   backupPath: string | null
 }
 
+export interface RegistryRemoveResult {
+  action: 'removed' | 'not-found' | 'skipped-missing' | 'skipped-malformed'
+  backupPath: string | null
+}
+
+/** True when a registry entry refers to the given draft (by id or folder path). */
+function entryMatches(
+  entry: Record<string, unknown>,
+  draftId: string,
+  folderJsonLower: string
+): boolean {
+  return (
+    entry['draft_id'] === draftId ||
+    (typeof entry['draft_fold_path'] === 'string' &&
+      toJsonPath(entry['draft_fold_path']).toLowerCase() === folderJsonLower)
+  )
+}
+
 /** Full entry shape observed on CapCut 8.7 — defaults for fields we don't know. */
 function buildDefaultEntry(): Record<string, unknown> {
   return {
@@ -126,12 +144,9 @@ export async function upsertRegistryEntry(
   const backupPath = `${registryPath}.capshare-backup-${Date.now()}`
   await copyFile(registryPath, backupPath)
 
-  const folderJson = toJsonPath(params.folderPath)
-  const existing = registry.all_draft_store.find(
-    (entry) =>
-      entry['draft_id'] === params.draftId ||
-      (typeof entry['draft_fold_path'] === 'string' &&
-        toJsonPath(entry['draft_fold_path'] as string).toLowerCase() === folderJson.toLowerCase())
+  const folderJsonLower = toJsonPath(params.folderPath).toLowerCase()
+  const existing = registry.all_draft_store.find((entry) =>
+    entryMatches(entry, params.draftId, folderJsonLower)
   )
 
   let action: 'patched' | 'inserted'
@@ -172,4 +187,59 @@ export async function restoreRegistryBackup(
 ): Promise<void> {
   if (!backupPath || !existsSync(backupPath)) return
   await rename(backupPath, join(draftRoot, ROOT_META_FILENAME))
+}
+
+/**
+ * Removes the registry entry/entries for a deleted draft so no ghost recents
+ * row remains (CapCut trusts existing entries without self-correcting them).
+ * Mirrors upsertRegistryEntry: never throws for missing/malformed registries
+ * (those are skipped — CapCut rebuilds), backs up before writing, and restores
+ * the backup if the write fails. Matches by draft_id OR normalized folder path.
+ */
+export async function removeRegistryEntry(
+  draftRoot: string,
+  params: { draftId: string; folderPath: string }
+): Promise<RegistryRemoveResult> {
+  const registryPath = join(draftRoot, ROOT_META_FILENAME)
+  if (!existsSync(registryPath)) {
+    return { action: 'skipped-missing', backupPath: null }
+  }
+
+  let registry: RegistryFile
+  try {
+    const parsed = JSON.parse(await readFile(registryPath, 'utf8')) as unknown
+    if (
+      parsed === null ||
+      typeof parsed !== 'object' ||
+      !Array.isArray((parsed as RegistryFile).all_draft_store)
+    ) {
+      return { action: 'skipped-malformed', backupPath: null }
+    }
+    registry = parsed as RegistryFile
+  } catch {
+    return { action: 'skipped-malformed', backupPath: null }
+  }
+
+  const folderJsonLower = toJsonPath(params.folderPath).toLowerCase()
+  const before = registry.all_draft_store.length
+  registry.all_draft_store = registry.all_draft_store.filter(
+    (entry) => !entryMatches(entry, params.draftId, folderJsonLower)
+  )
+  const removedCount = before - registry.all_draft_store.length
+  if (removedCount === 0) return { action: 'not-found', backupPath: null }
+
+  const backupPath = `${registryPath}.capshare-backup-${Date.now()}`
+  await copyFile(registryPath, backupPath)
+
+  // draft_ids is a COUNT, not a list — decrement by what we removed, floored at 0.
+  const current = typeof registry.draft_ids === 'number' ? registry.draft_ids : 0
+  registry.draft_ids = Math.max(0, current - removedCount)
+
+  try {
+    await atomicWriteFile(registryPath, JSON.stringify(registry))
+  } catch (error) {
+    await rename(backupPath, registryPath).catch(() => {})
+    throw error
+  }
+  return { action: 'removed', backupPath }
 }

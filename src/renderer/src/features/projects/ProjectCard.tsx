@@ -8,15 +8,25 @@ interface ProjectCardProps {
   project: DraftSummary
   index: number
   onOpen: (project: DraftSummary) => void
+  onContextMenu: (project: DraftSummary, x: number, y: number) => void
 }
 
-export function ProjectCard({ project, index, onOpen }: ProjectCardProps): JSX.Element {
+export function ProjectCard({
+  project,
+  index,
+  onOpen,
+  onContextMenu
+}: ProjectCardProps): JSX.Element {
   return (
     <motion.button
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 350, damping: 28, delay: index * 0.04 }}
       onClick={() => onOpen(project)}
+      onContextMenu={(e) => {
+        e.preventDefault()
+        onContextMenu(project, e.clientX, e.clientY)
+      }}
       className="glass group flex flex-col overflow-hidden rounded-2xl text-left shadow-sm outline-2 outline-transparent transition-[outline-color] hover:outline-primary/60"
     >
       <div className="relative aspect-video w-full overflow-hidden rounded-t-2xl bg-foreground/4">

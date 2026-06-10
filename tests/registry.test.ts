@@ -2,7 +2,7 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSy
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { upsertRegistryEntry } from '../src/main/core/capcut/registry'
+import { removeRegistryEntry, upsertRegistryEntry } from '../src/main/core/capcut/registry'
 import { detectCapCutEnv } from '../src/main/core/capcut/locator'
 import { exportDraft } from '../src/main/core/capshare/export'
 import { importCapshare } from '../src/main/core/capshare/import'
@@ -96,6 +96,70 @@ describe('upsertRegistryEntry', () => {
     expect(registry.all_draft_store).toHaveLength(1)
     expect(registry.draft_ids).toBe(1)
     expect(registry.all_draft_store[0]['draft_name']).toBe('Patch Me Renamed')
+  })
+})
+
+describe('removeRegistryEntry', () => {
+  it('removes the matching entry, decrements draft_ids, and leaves a backup', async () => {
+    const draft = createMacDraft(mac, { name: 'Trash Me' })
+    const result = await removeRegistryEntry(mac.draftRoot, {
+      draftId: draft.metaDraftId,
+      folderPath: draft.folder
+    })
+    expect(result.action).toBe('removed')
+    expect(result.backupPath).toBeTruthy()
+    expect(existsSync(result.backupPath!)).toBe(true)
+
+    const registry = JSON.parse(
+      readFileSync(join(mac.draftRoot, 'root_meta_info.json'), 'utf8')
+    ) as { all_draft_store: Record<string, unknown>[]; draft_ids: number }
+    expect(registry.all_draft_store).toHaveLength(0)
+    expect(registry.draft_ids).toBe(0)
+  })
+
+  it('matches by folder path even when the draft id differs', async () => {
+    const draft = createMacDraft(mac, { name: 'By Path' })
+    const result = await removeRegistryEntry(mac.draftRoot, {
+      draftId: 'a-totally-different-id',
+      folderPath: draft.folder
+    })
+    expect(result.action).toBe('removed')
+    const registry = JSON.parse(
+      readFileSync(join(mac.draftRoot, 'root_meta_info.json'), 'utf8')
+    ) as { all_draft_store: Record<string, unknown>[] }
+    expect(registry.all_draft_store).toHaveLength(0)
+  })
+
+  it('returns not-found (no backup) and leaves the registry intact when nothing matches', async () => {
+    createMacDraft(mac, { name: 'Keep Me' })
+    const before = readFileSync(join(mac.draftRoot, 'root_meta_info.json'), 'utf8')
+    const result = await removeRegistryEntry(mac.draftRoot, {
+      draftId: 'nope',
+      folderPath: join(mac.draftRoot, 'Ghost')
+    })
+    expect(result.action).toBe('not-found')
+    expect(result.backupPath).toBeNull()
+    expect(readFileSync(join(mac.draftRoot, 'root_meta_info.json'), 'utf8')).toBe(before)
+  })
+
+  it('skips when the registry file is missing', async () => {
+    const result = await removeRegistryEntry(mac.draftRoot, {
+      draftId: 'x',
+      folderPath: join(mac.draftRoot, 'x')
+    })
+    expect(result.action).toBe('skipped-missing')
+    expect(result.backupPath).toBeNull()
+  })
+
+  it('skips malformed registries without touching them', async () => {
+    const registryPath = join(mac.draftRoot, 'root_meta_info.json')
+    writeFileSync(registryPath, '{"all_draft_store": 5}')
+    const result = await removeRegistryEntry(mac.draftRoot, {
+      draftId: 'x',
+      folderPath: join(mac.draftRoot, 'x')
+    })
+    expect(result.action).toBe('skipped-malformed')
+    expect(readFileSync(registryPath, 'utf8')).toBe('{"all_draft_store": 5}')
   })
 })
 

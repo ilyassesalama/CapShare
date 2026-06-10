@@ -286,6 +286,7 @@
 @layer components {
   .tooltip,
   .select__popover,
+  .dropdown__popover,
   .toast {
     -webkit-backdrop-filter: blur(16px) saturate(180%);
     backdrop-filter: blur(16px) saturate(180%);

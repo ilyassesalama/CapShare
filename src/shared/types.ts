@@ -148,6 +148,7 @@ export interface CapShareErrorShape {
     | 'ARCHIVE_INVALID'
     | 'IMPORT_FAILED'
     | 'COLLISION_UNRESOLVED'
+    | 'DELETE_FAILED'
     | 'CANCELLED'
     | 'UNKNOWN'
   message: string
