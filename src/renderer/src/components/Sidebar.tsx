@@ -6,6 +6,7 @@ import { isMacLike } from '@/lib/format'
 import { Clapperboard } from '@/components/animate-ui/icons/clapperboard'
 import { CloudDownload } from '@/components/animate-ui/icons/cloud-download'
 import { Settings } from '@/components/animate-ui/icons/settings'
+import logo from '@/assets/logo.png'
 
 export type View = 'projects' | 'import' | 'settings'
 
@@ -72,9 +73,7 @@ export function Sidebar({ view, onNavigate }: SidebarProps): JSX.Element {
         )}
       >
         <div className="mb-4 flex items-center gap-2.5 px-2">
-          <div className="flex size-8 items-center justify-center rounded-xl bg-linear-to-br from-[#4F7DF9] via-[#6A5CF6] to-[#9D4DF0] text-sm font-bold text-white shadow-md">
-            C
-          </div>
+          <img src={logo} alt="" draggable={false} className="size-8" />
           <div className="text-[15px] font-semibold tracking-tight">CapShare</div>
         </div>
 
