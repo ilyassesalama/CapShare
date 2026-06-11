@@ -6,15 +6,21 @@
 
 #include <napi.h>
 
+#include <cstring>
+
 #import <AppKit/AppKit.h>
 #import <QuartzCore/QuartzCore.h>
 
 // BrowserWindow.getNativeWindowHandle() yields a Buffer holding an NSView*.
+// ARC forbids casting the raw byte pointer to an ObjC pointer type directly,
+// so copy the pointer value out and bridge it without ownership transfer.
 static NSView* ViewFromHandle(const Napi::CallbackInfo& info) {
   if (info.Length() < 1 || !info[0].IsBuffer()) return nil;
   auto buffer = info[0].As<Napi::Buffer<uint8_t>>();
-  if (buffer.Length() < sizeof(NSView*)) return nil;
-  return *reinterpret_cast<NSView* __unsafe_unretained*>(buffer.Data());
+  if (buffer.Length() < sizeof(void*)) return nil;
+  void* handle = nullptr;
+  std::memcpy(&handle, buffer.Data(), sizeof(handle));
+  return (__bridge NSView*)handle;
 }
 
 // setCornerRadius(handle: Buffer, radius: number): boolean
