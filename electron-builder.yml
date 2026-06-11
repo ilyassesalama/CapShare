@@ -11,7 +11,7 @@ publish:
     owner: ilyassesalama
     repo: CapShare
     releaseType: release
-# Uniform ad-hoc re-sign of the universal bundle (see build/mac-after-pack.cjs).
+# Ad-hoc re-sign fallback for unsigned mac builds (see build/mac-after-pack.cjs).
 afterPack: build/mac-after-pack.cjs
 files:
   - '!**/.vscode/*'
@@ -58,13 +58,13 @@ portable:
 
 mac:
   # Real signing path: when a Developer ID cert is available (auto-discovery on,
-  # or CSC_LINK/CSC_KEY_PASSWORD set in CI), electron-builder signs the merged
-  # universal bundle with hardened runtime and notarizes it via Apple ID
+  # or CSC_LINK/CSC_KEY_PASSWORD set in CI), electron-builder signs the bundle
+  # with hardened runtime and notarizes it via Apple ID
   # (APPLE_ID / APPLE_APP_SPECIFIC_PASSWORD / APPLE_TEAM_ID env vars).
   #
   # Fallback path: set CSC_IDENTITY_AUTO_DISCOVERY=false (CI smoke test, or a
   # contributor without the cert) and electron-builder skips signing — then
-  # build/mac-after-pack.cjs ad-hoc deep-signs the universal bundle so it still
+  # build/mac-after-pack.cjs ad-hoc deep-signs the bundle so it still
   # launches on Apple Silicon (recipients right-click → Open on first launch).
   hardenedRuntime: true
   gatekeeperAssess: false
@@ -75,9 +75,13 @@ mac:
   category: public.app-category.video
   target:
     - target: dmg
-      arch: universal
+      arch:
+        - arm64
+        - x64
     - target: zip
-      arch: universal
+      arch:
+        - arm64
+        - x64
   entitlements: build/entitlements.mac.plist
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
@@ -93,6 +97,6 @@ mac:
           public.mime-type:
             - application/x-capshare
 dmg:
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${name}-${version}-${arch}.${ext}
 
 npmRebuild: false
