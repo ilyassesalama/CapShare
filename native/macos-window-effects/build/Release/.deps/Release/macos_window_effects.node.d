@@ -1,0 +1,1 @@
+cmd_Release/macos_window_effects.node := c++ -bundle -framework AppKit -framework QuartzCore -arch x86_64 -undefined dynamic_lookup -Wl,-search_paths_first -mmacosx-version-min=11.0 -arch arm64 -L./Release -stdlib=libc++ -L/opt/homebrew/opt/tcl-tk/lib -o Release/macos_window_effects.node Release/obj.target/macos_window_effects/src/effects.o 
