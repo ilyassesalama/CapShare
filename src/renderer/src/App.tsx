@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState, type JSX } from 'react'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
-import { Button, Toast, toast } from '@heroui/react'
-import { RefreshCw } from 'lucide-react'
+import { Toast, toast } from '@heroui/react'
 import type { AppSettings, ProjectsResponse } from '@shared/types'
 import { Sidebar, type View } from '@/components/Sidebar'
 import { Wallpaper } from '@/components/glass/Wallpaper'
@@ -11,7 +10,6 @@ import { ProjectsView } from '@/features/projects/ProjectsView'
 import { SettingsView } from '@/features/settings/SettingsView'
 import { useUpdates } from '@/hooks/use-updates'
 import { errorMessage, unwrap } from '@/lib/ipc'
-import { cn } from '@/lib/utils'
 
 const HEADERS: Record<View, { title: string; subtitle: string }> = {
   projects: { title: 'Projects', subtitle: 'CapCut library' },
@@ -42,16 +40,18 @@ function App(): JSX.Element {
 
   useTheme(settings?.theme)
 
-  const refreshProjects = useCallback(async (): Promise<void> => {
-    setLoadingProjects(true)
+  // Silent refreshes (window focus) swap data in place: no spinner, no toasts —
+  // otherwise every alt-tab back would flash the loading state and re-toast warnings.
+  const refreshProjects = useCallback(async (options?: { silent?: boolean }): Promise<void> => {
+    if (!options?.silent) setLoadingProjects(true)
     try {
       const response = unwrap(await window.capshare.listProjects())
       setProjects(response)
-      for (const warning of response.warnings) toast.warning(warning)
+      if (!options?.silent) for (const warning of response.warnings) toast.warning(warning)
     } catch (error) {
-      toast.danger(errorMessage(error))
+      if (!options?.silent) toast.danger(errorMessage(error))
     } finally {
-      setLoadingProjects(false)
+      if (!options?.silent) setLoadingProjects(false)
     }
   }, [])
 
@@ -94,6 +94,12 @@ function App(): JSX.Element {
     }
   }, [refreshProjects])
 
+  useEffect(() => {
+    const onFocus = (): void => void refreshProjects({ silent: true })
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
+  }, [refreshProjects])
+
   const pickDraftRoot = useCallback(async (): Promise<void> => {
     try {
       const folder = unwrap(
@@ -116,27 +122,13 @@ function App(): JSX.Element {
             don't fade on view switch; only the scrollable body animates. */}
         <main className="relative min-w-0 flex-1">
           <ProgressiveBlur position="top" className="-left-56 right-0 z-10 h-24" />
-          <header className="app-drag absolute inset-x-0 top-0 z-20 flex items-center justify-between px-4 pt-5 pb-3">
-            <div>
-              <h1 className="text-xl font-bold tracking-tight">{HEADERS[view].title}</h1>
-              <p className="text-[12px] font-medium text-foreground/75">
-                {view === 'projects' && projects?.found
-                  ? `${projects.drafts.length} CapCut project${projects.drafts.length === 1 ? '' : 's'}`
-                  : HEADERS[view].subtitle}
-              </p>
-            </div>
-            {view === 'projects' && (
-              <Button
-                variant="ghost"
-                isIconOnly
-                className="app-no-drag rounded-full"
-                onPress={() => void refreshProjects()}
-                isDisabled={loadingProjects}
-                aria-label="Refresh projects"
-              >
-                <RefreshCw className={cn('size-4', loadingProjects && 'animate-spin')} />
-              </Button>
-            )}
+          <header className="app-drag absolute inset-x-0 top-0 z-20 px-4 pt-5 pb-3">
+            <h1 className="text-xl font-bold tracking-tight">{HEADERS[view].title}</h1>
+            <p className="text-[12px] font-medium text-foreground/75">
+              {view === 'projects' && projects?.found
+                ? `${projects.drafts.length} CapCut project${projects.drafts.length === 1 ? '' : 's'}`
+                : HEADERS[view].subtitle}
+            </p>
           </header>
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
