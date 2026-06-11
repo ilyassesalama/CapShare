@@ -49,12 +49,12 @@ nsis:
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
-  artifactName: ${name}-${version}-setup.${ext}
+  artifactName: ${name}-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
 portable:
-  artifactName: ${name}-${version}-portable.${ext}
+  artifactName: ${name}-portable.${ext}
 
 mac:
   # Real signing path: when a Developer ID cert is available (auto-discovery on,
@@ -97,6 +97,6 @@ mac:
           public.mime-type:
             - application/x-capshare
 dmg:
-  artifactName: ${name}-${version}-${arch}.${ext}
+  artifactName: ${name}-${arch}.${ext}
 
 npmRebuild: false
