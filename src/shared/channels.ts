@@ -9,6 +9,8 @@ export const IPC = {
 
   listProjects: 'projects:list',
   deleteProject: 'projects:delete',
+  pickProjectCover: 'projects:pick-cover',
+  updateProject: 'projects:update',
 
   pickExportDestination: 'export:pick-destination',
   runExport: 'export:run',

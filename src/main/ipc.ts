@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, nativeImage, shell } from 'electron'
 import { join } from 'node:path'
 import log from 'electron-log/main'
 import { z } from 'zod'
@@ -10,13 +10,15 @@ import type {
   ImportResult,
   IpcResult,
   ProgressEvent,
-  ProjectsResponse
+  ProjectsResponse,
+  UpdateProjectResult
 } from '../shared/types'
 import { isCapCutRunning, launchCapCut } from './capcut-app'
 import { deleteDraft } from './core/capcut/delete'
 import { listDraftSummaries } from './core/capcut/draft'
 import { detectCapCutEnvFromProcess } from './core/capcut/locator'
 import type { CapCutEnv } from './core/capcut/model'
+import { updateDraft } from './core/capcut/update'
 import { exportDraft } from './core/capshare/export'
 import { importCapshare, inspectCapshare } from './core/capshare/import'
 import { CapShareError } from './core/errors'
@@ -101,6 +103,18 @@ const deleteRequestSchema = z.object({
   draftId: z.string().min(1)
 })
 
+const JPEG_DATA_URL_PREFIX = 'data:image/jpeg;base64,'
+
+const updateRequestSchema = z.object({
+  folderPath: z.string().min(1),
+  draftId: z.string().min(1),
+  name: z.string().trim().min(1).max(120).optional(),
+  coverDataUrl: z.string().startsWith(JPEG_DATA_URL_PREFIX).optional()
+})
+
+/** Longest cover edge written to draft_cover.jpg — covers are card-sized thumbnails. */
+const COVER_MAX_EDGE = 1280
+
 const settingsUpdateSchema = z.object({
   draftRootOverride: z.string().nullable().optional(),
   defaultExportDir: z.string().nullable().optional(),
@@ -146,6 +160,61 @@ export function registerIpcHandlers(ctx: IpcContext): void {
       return fail(error)
     }
   })
+
+  ipcMain.handle(IPC.pickProjectCover, async (): Promise<IpcResult<string | null>> => {
+    try {
+      const win = ctx.getMainWindow()
+      const result = await dialog.showOpenDialog(win!, {
+        title: 'Choose thumbnail image',
+        properties: ['openFile'],
+        // nativeImage only decodes PNG/JPEG reliably — don't advertise more.
+        filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg'] }]
+      })
+      if (result.canceled || result.filePaths.length === 0) return ok(null)
+
+      const image = nativeImage.createFromPath(result.filePaths[0])
+      if (image.isEmpty()) {
+        throw new CapShareError(
+          'UPDATE_FAILED',
+          'Could not read that image. Choose a PNG or JPEG file.'
+        )
+      }
+      const { width, height } = image.getSize()
+      const resized =
+        Math.max(width, height) <= COVER_MAX_EDGE
+          ? image
+          : width >= height
+            ? image.resize({ width: COVER_MAX_EDGE })
+            : image.resize({ height: COVER_MAX_EDGE })
+      const jpeg = resized.toJPEG(85)
+      return ok(`data:image/jpeg;base64,${jpeg.toString('base64')}`)
+    } catch (error) {
+      return fail(error)
+    }
+  })
+
+  ipcMain.handle(
+    IPC.updateProject,
+    async (_event, raw: unknown): Promise<IpcResult<UpdateProjectResult>> => {
+      try {
+        const request = updateRequestSchema.parse(raw)
+        const env = requireEnv()
+        const result = await updateDraft({
+          draftRoot: env.draftRoot,
+          folderPath: request.folderPath,
+          draftId: request.draftId,
+          newName: request.name,
+          coverJpeg: request.coverDataUrl
+            ? Buffer.from(request.coverDataUrl.slice(JPEG_DATA_URL_PREFIX.length), 'base64')
+            : undefined,
+          os: env.os
+        })
+        return ok(result)
+      } catch (error) {
+        return fail(error)
+      }
+    }
+  )
 
   ipcMain.handle(
     IPC.pickExportDestination,

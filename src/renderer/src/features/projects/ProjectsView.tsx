@@ -1,12 +1,13 @@
 import { useRef, useState, type JSX, type Key } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence } from 'motion/react'
-import { AlertTriangle, FileDown, FolderSearch, Trash2 } from 'lucide-react'
+import { AlertTriangle, FileDown, FolderSearch, Pencil, Trash2 } from 'lucide-react'
 import { AlertDialog, Button, Dropdown, Label, Skeleton, toast } from '@heroui/react'
 import type { DraftSummary, ProjectsResponse } from '@shared/types'
 import { closeButtonClass, cn } from '@/lib/utils'
 import { kinematicScale } from '@/lib/dialog-anim'
 import { errorMessage, unwrap } from '@/lib/ipc'
+import { EditProjectDialog, type EditProjectSaved } from './EditProjectDialog'
 import { ProjectCard } from './ProjectCard'
 import { ProjectDetail } from './ProjectDetail'
 
@@ -35,6 +36,9 @@ export function ProjectsView({
   const [deleteTarget, setDeleteTarget] = useState<DraftSummary | null>(null)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
+
+  const [editTarget, setEditTarget] = useState<DraftSummary | null>(null)
+  const [editOpen, setEditOpen] = useState(false)
   const trashName = window.capshare.env.platform === 'win32' ? 'Recycle Bin' : 'Trash'
 
   const openDetail = (project: DraftSummary): void => {
@@ -54,10 +58,29 @@ export function ProjectsView({
     if (!target) return
     if (key === 'export') {
       openDetail(target)
+    } else if (key === 'edit') {
+      setEditTarget(target)
+      setEditOpen(true)
     } else if (key === 'delete') {
       setDeleteTarget(target)
       setDeleteOpen(true)
     }
+  }
+
+  const onEditSaved = (updated: EditProjectSaved): void => {
+    setEditOpen(false)
+    toast.success(`Updated “${updated.name}”`)
+    if (editTarget && selected?.folderPath === editTarget.folderPath) {
+      // The detail dialog renders the `selected` snapshot, which onRefresh
+      // does not touch — patch it so an open/animating detail stays fresh.
+      setSelected({
+        ...selected,
+        name: updated.name,
+        folderPath: updated.folderPath,
+        coverDataUrl: updated.coverDataUrl ?? selected.coverDataUrl
+      })
+    }
+    onRefresh()
   }
 
   const confirmDelete = async (): Promise<void> => {
@@ -165,6 +188,10 @@ export function ProjectsView({
           className="min-w-44"
         >
           <Dropdown.Menu aria-label="Project actions" onAction={onMenuAction}>
+            <Dropdown.Item id="edit" textValue="Edit project">
+              <Pencil className="size-4 shrink-0 text-muted-foreground" />
+              <Label>Edit project…</Label>
+            </Dropdown.Item>
             <Dropdown.Item id="export" textValue="Export">
               <FileDown className="size-4 shrink-0 text-muted-foreground" />
               <Label>Export…</Label>
@@ -176,6 +203,13 @@ export function ProjectsView({
           </Dropdown.Menu>
         </Dropdown.Popover>
       </Dropdown>
+
+      <EditProjectDialog
+        project={editTarget}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        onSaved={onEditSaved}
+      />
 
       <AlertDialog.Backdrop
         isOpen={deleteOpen}

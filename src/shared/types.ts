@@ -104,6 +104,21 @@ export interface ImportResult {
   warnings: string[]
 }
 
+export interface UpdateProjectRequest {
+  folderPath: string
+  draftId: string
+  /** New display name (trimmed, non-empty). Omit to keep the current name. */
+  name?: string
+  /** New cover as a data:image/jpeg;base64,… URL (from pickProjectCover). Omit to keep. */
+  coverDataUrl?: string
+}
+
+export interface UpdateProjectResult {
+  /** Folder path after the update (changes when a rename moved the folder). */
+  folderPath: string
+  name: string
+}
+
 /**
  * Auto-update lifecycle, streamed from the main process (see src/main/updater.ts).
  * The renderer reflects this in the Settings → About row and a "ready" toast.
@@ -149,6 +164,7 @@ export interface CapShareErrorShape {
     | 'IMPORT_FAILED'
     | 'COLLISION_UNRESOLVED'
     | 'DELETE_FAILED'
+    | 'UPDATE_FAILED'
     | 'CANCELLED'
     | 'UNKNOWN'
   message: string

@@ -46,6 +46,11 @@ export interface RegistryRemoveResult {
   backupPath: string | null
 }
 
+export interface RegistryRenameResult {
+  action: 'patched' | 'not-found' | 'skipped-missing' | 'skipped-malformed'
+  backupPath: string | null
+}
+
 /** True when a registry entry refers to the given draft (by id or folder path). */
 function entryMatches(
   entry: Record<string, unknown>,
@@ -198,6 +203,58 @@ export async function restoreRegistryBackup(
 ): Promise<void> {
   if (!backupPath || !existsSync(backupPath)) return
   await rename(backupPath, join(draftRoot, ROOT_META_FILENAME))
+}
+
+/**
+ * Updates the name/path fields of an existing registry entry after a draft
+ * rename. Deliberately narrower than upsertRegistryEntry's patchEntry, which
+ * also rewrites timestamps/duration — a rename must leave those untouched.
+ * Same tolerance contract: missing/malformed registries and absent entries are
+ * skipped (CapCut back-fills unknown folders on its next scan).
+ */
+export async function renameRegistryEntry(
+  draftRoot: string,
+  params: {
+    draftId: string
+    /** Folder path BEFORE the rename — entries still carry it. */
+    oldFolderPath: string
+    newFolderPath: string
+    draftName: string
+    timelineFilename: TimelineFilename
+  }
+): Promise<RegistryRenameResult> {
+  const registryPath = join(draftRoot, ROOT_META_FILENAME)
+  if (!existsSync(registryPath)) {
+    return { action: 'skipped-missing', backupPath: null }
+  }
+
+  const registry = await loadRegistry(registryPath)
+  if (!registry) {
+    return { action: 'skipped-malformed', backupPath: null }
+  }
+
+  const oldFolderJsonLower = toJsonPath(params.oldFolderPath).toLowerCase()
+  const entry = registry.all_draft_store.find((e) =>
+    entryMatches(e, params.draftId, oldFolderJsonLower)
+  )
+  if (!entry) return { action: 'not-found', backupPath: null }
+
+  const backupPath = `${registryPath}.capshare-backup-${Date.now()}`
+  await copyFile(registryPath, backupPath)
+
+  const folderJson = toJsonPath(params.newFolderPath)
+  entry['draft_name'] = params.draftName
+  entry['draft_fold_path'] = folderJson
+  entry['draft_json_file'] = `${folderJson}/${params.timelineFilename}`
+  entry['draft_cover'] = `${folderJson}/draft_cover.jpg`
+
+  try {
+    await atomicWriteFile(registryPath, JSON.stringify(registry))
+  } catch (error) {
+    await rename(backupPath, registryPath).catch(() => {})
+    throw error
+  }
+  return { action: 'patched', backupPath }
 }
 
 /**

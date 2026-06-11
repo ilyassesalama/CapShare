@@ -8,6 +8,8 @@ import type {
   IpcResult,
   ProgressEvent,
   ProjectsResponse,
+  UpdateProjectRequest,
+  UpdateProjectResult,
   UpdateStatus
 } from '../shared/types'
 
@@ -41,6 +43,13 @@ const api = {
 
   deleteProject: (request: { folderPath: string; draftId: string }): Promise<IpcResult<void>> =>
     ipcRenderer.invoke(IPC.deleteProject, request),
+
+  /** Resolves a JPEG data URL for preview, or null if canceled. Nothing is written to the draft. */
+  pickProjectCover: (): Promise<IpcResult<string | null>> =>
+    ipcRenderer.invoke(IPC.pickProjectCover),
+
+  updateProject: (request: UpdateProjectRequest): Promise<IpcResult<UpdateProjectResult>> =>
+    ipcRenderer.invoke(IPC.updateProject, request),
 
   pickExportDestination: (defaultName: string): Promise<IpcResult<string | null>> =>
     ipcRenderer.invoke(IPC.pickExportDestination, defaultName),
