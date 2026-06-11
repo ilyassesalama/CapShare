@@ -13,22 +13,31 @@ CapCut desktop has no built-in way to move a project to another computer. CapSha
 - 🛡️ **Safe by design**: staged imports with atomic renames, automatic backups, never destructive
 - 🧊 macOS 26 _Liquid Glass_-style UI on both platforms
 
-## Install
+## Download & install
 
-Builds are unsigned (no Apple/Microsoft certificates), so the OS will warn on first launch:
+Pick the download for your machine (always points to the latest version):
 
-**macOS** (`CapShare-x.y.z.dmg`)
+| Your machine                         | Download                                                                                                       |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| Mac with Apple Silicon (M1 or later) | [`capshare-arm64.dmg`](https://github.com/ilyassesalama/CapShare/releases/latest/download/capshare-arm64.dmg)   |
+| Mac with Intel                       | [`capshare-x64.dmg`](https://github.com/ilyassesalama/CapShare/releases/latest/download/capshare-x64.dmg)       |
+| Windows (installer — recommended)    | [`capshare-setup.exe`](https://github.com/ilyassesalama/CapShare/releases/latest/download/capshare-setup.exe)   |
+| Windows (portable, no install)       | [`capshare-portable.exe`](https://github.com/ilyassesalama/CapShare/releases/latest/download/capshare-portable.exe) |
+
+All versions live on the [Releases page](https://github.com/ilyassesalama/CapShare/releases). Not sure which Mac you have? ** → About This Mac** — "Apple M…" means Apple Silicon, otherwise Intel. The `…-mac.zip` files on the release page are used by the auto-updater; you don't need them.
+
+**macOS**
 
 1. Open the DMG and drag CapShare to Applications.
-2. First launch: **right-click → Open → Open** (or allow it under System Settings → Privacy & Security).
-   If macOS says the app "is damaged", clear the quarantine flag once:
-   `xattr -dr com.apple.quarantine /Applications/CapShare.app`
+2. Launch it. Builds are signed and notarized, so macOS opens them without warnings.
 
-**Windows** (`capshare-x.y.z-setup.exe`)
+**Windows**
 
-1. Run the installer. If SmartScreen appears: **More info → Run anyway**.
+1. Run the installer. Windows builds are unsigned, so if SmartScreen appears: **More info → Run anyway**.
 2. The installer registers `.capshare` files so double-clicking them opens CapShare.
    (The portable `.exe` works too, but can't register the file association.)
+
+CapShare checks for updates on launch and keeps itself current automatically (installed versions; the portable exe doesn't self-update).
 
 ## Use
 
@@ -74,7 +83,7 @@ pnpm dev             # hot-reloading dev app
 pnpm test            # core-logic unit tests (Vitest)
 pnpm typecheck
 pnpm lint
-pnpm build:mac       # dmg + zip (universal)
+pnpm build:mac       # dmg + zip (arm64 + x64)
 pnpm build:win       # nsis installer + portable
 ```
 
